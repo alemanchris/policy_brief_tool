@@ -1,2 +1,18 @@
 # policy_brief_tool
 This Repo Keeps the record for my policy API or tool
+
+# Policy Brief Studio (GitHub Pages MVP)
+
+A wizard-style UI for generating a policy brief with citations + reliability scoring.
+This repo hosts the static frontend on GitHub Pages.
+
+## Live site
+Enable GitHub Pages: Settings → Pages → Source: GitHub Actions
+
+## Next phase
+Add a backend service to:
+- ingest PDFs
+- chunk + embed + retrieve (RAG)
+- generate brief JSON with citations
+- compute reliability score
+- produce a 3-minute explainer script (+ optional video render)
