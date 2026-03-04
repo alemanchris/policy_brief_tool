@@ -9,7 +9,7 @@ This repo hosts the static frontend on GitHub Pages.
 ## Live site
 Enable GitHub Pages: Settings → Pages → Source: GitHub Actions
 
-## Next phase
+## What I will build next 
 Add a backend service to:
 - ingest PDFs
 - chunk + embed + retrieve (RAG)
