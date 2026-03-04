@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Policy Brief Studio</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">PB</div>
+      <div>
+        <div class="title">Policy Brief Studio</div>
+        <div class="subtitle">Citations • Reliability • One-page brief</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="#" id="navHome" class="navlink active">Home</a>
+      <a href="#" id="navHow" class="navlink">How it works</a>
+      <a href="#" id="navDemo" class="navlink">Demo</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- HOME -->
+    <section id="viewHome" class="view">
+      <div class="hero">
+        <h1>Build a policy brief you can defend.</h1>
+        <p>
+          Upload sources, add your argument, and generate a brief with
+          traceable citations and a reliability score.
+        </p>
+
+        <div class="card">
+          <h2>Start your policy brief</h2>
+
+          <label class="label">Topic</label>
+          <input id="topicInput" class="input" placeholder="e.g., Should the UAE introduce an unemployment insurance expansion?" />
+
+          <label class="label">Policy question (one sentence)</label>
+          <textarea id="questionInput" class="textarea" rows="2"
+            placeholder="e.g., What is the expected impact on employment, fiscal costs, and inequality over 3 years?"></textarea>
+
+          <button id="startBtn" class="btn primary">Start</button>
+          <div id="startError" class="error hidden"></div>
+        </div>
+
+        <div class="hint">
+          Tip: this is a wizard. You’ll see steps + timeline, then upload sources, then draft arguments.
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="viewHow" class="view hidden">
+      <div class="card">
+        <h2>How it works</h2>
+        <ol class="how">
+          <li><b>Define the question.</b> Keep it tight and decision-relevant.</li>
+          <li><b>Upload sources.</b> PDFs, notes, and datasets (later).</li>
+          <li><b>Add your stance + constraints.</b> What counts as success? What tradeoffs matter?</li>
+          <li><b>Generate a brief.</b> Claims must be supported by citations, or marked as uncertain.</li>
+          <li><b>Reliability score.</b> Based on citation coverage, evidence strength, and contradiction handling.</li>
+          <li><b>3-min explainer.</b> Auto-generates a narrated script + slide plan (video rendering later).</li>
+        </ol>
+        <p class="muted">
+          Note: GitHub Pages hosts the UI. The “brain” (RAG + scoring) will be a small backend service.
+        </p>
+      </div>
+    </section>
+
+    <!-- DEMO / WIZARD -->
+    <section id="viewDemo" class="view hidden">
+      <div class="grid">
+        <div class="card">
+          <h2>Workflow</h2>
+          <div class="timeline" id="timeline"></div>
+          <div class="progress">
+            <div class="bar" id="progressBar" style="width: 0%;"></div>
+          </div>
+          <div class="muted" id="progressLabel"></div>
+        </div>
+
+        <div class="card">
+          <h2 id="stepTitle">Step</h2>
+          <p id="stepDesc" class="muted"></p>
+
+          <!-- Step content container -->
+          <div id="stepContent"></div>
+
+          <div class="actions">
+            <button id="backBtn" class="btn">Back</button>
+            <button id="nextBtn" class="btn primary">Next</button>
+          </div>
+
+          <div id="wizardError" class="error hidden"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Hosted on GitHub Pages.</span>
+    <span class="dot">•</span>
+    <span>Built for policy credibility: citations and uncertainty.</span>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
