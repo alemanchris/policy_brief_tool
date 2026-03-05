@@ -219,11 +219,11 @@ function renderWizard(){
   // Versions panel appears from Step 4 onward; for Steps 1–3, expand content to full width.
   if(stepIndex >= 3){
     versionsCard.classList.remove("hidden");
-    wizardGrid.classList.remove("single");
+    wizardGrid.classList.add("hasVersions");
     renderVersionsPanel();
   } else {
     versionsCard.classList.add("hidden");
-    wizardGrid.classList.add("single"); // key fix for "dead space" on the right
+    wizardGrid.classList.remove("hasVersions");
   }
 }
 
