@@ -45,24 +45,20 @@ function moonSvg(){
 const state = {
   topic: "",
   question: "",
-  // step2: documents + datasets
   documents: [], // {id, filename, file, mode:'auto'|'manual'|null, summaryBullets:[], selectedIds:Set, pageCount?:number}
   datasets: [],  // {id, filename, file, profile:null|{...}, requests:[] }
-  // step3:
   stanceText: "",
   pollsText: "",
   expertsText: "",
-  // step4:
   reportTitle: "",
   reports: [],   // versions: {id, createdAt, title, filename, oneSentence, bullets, content, fileBlob}
   activeReportId: null,
-  // step5:
   video: { status: "idle", reportId: null, voice: "Ava", ready: false, blob: null }
 };
 
 let stepIndex = 0;
 
-/* ---------- 5 steps (aligned to your workflow) ---------- */
+/* ---------- 5 steps ---------- */
 const steps = [
   {
     id: "q",
@@ -101,7 +97,7 @@ const steps = [
   }
 ];
 
-/* ---------- Navigation (Home / How / Start) ---------- */
+/* ---------- Navigation ---------- */
 const views = {
   home: $("viewHome"),
   how: $("viewHow"),
@@ -143,7 +139,6 @@ startBtn.addEventListener("click", () => {
   }
   state.topic = t;
   state.question = q;
-  // Prefill report title with topic by default (editable in Step 4)
   if(!state.reportTitle) state.reportTitle = t;
 
   showView("start");
@@ -183,7 +178,6 @@ nextBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Special transitions:
   // Step 3 -> Step 4 triggers generation animation + new version creation
   if(steps[stepIndex].id === "args"){
     stepIndex = 3;
@@ -199,14 +193,13 @@ nextBtn.addEventListener("click", async () => {
 
 /* ---------- Wizard render ---------- */
 function ensureWizardStart(){
-  // If user did not fill from Home, Step 1 should be blank and editable here.
   stepIndex = 0;
   renderWizard();
 }
 
 function renderWizard(){
   renderTimeline(timelineWizard, stepIndex);
-  renderTimeline(timelineHome, stepIndex); // home sidebar reflects state too
+  renderTimeline(timelineHome, stepIndex);
 
   progressLabel.textContent = `Step ${stepIndex + 1} of ${steps.length}`;
   stepTitle.textContent = steps[stepIndex].name;
@@ -218,7 +211,6 @@ function renderWizard(){
   backBtn.textContent = (stepIndex === 0) ? "Back to Home" : "Back";
   nextBtn.textContent = (stepIndex === steps.length - 1) ? "Finish" : "Next";
 
-  // Versions panel appears from Step 4 onward
   if(stepIndex >= 3){
     versionsCard.classList.remove("hidden");
     renderVersionsPanel();
@@ -242,7 +234,7 @@ function renderTimeline(root, activeIndex){
     const info = document.createElement("div");
     const name = document.createElement("div");
     name.className = "stepName";
-    name.textContent = s.name;
+    name.textContent = stepDisplayName(s.id);
     const mini = document.createElement("div");
     mini.className = "stepMini";
     mini.textContent = shortStepHint(s.id);
@@ -252,15 +244,12 @@ function renderTimeline(root, activeIndex){
     div.appendChild(badge);
     div.appendChild(info);
 
-    // Click-to-navigate is allowed (except Step 4/5 require generation states to exist)
     div.addEventListener("click", () => {
-      // allow forward jump only if validations before are satisfied
       if(i <= activeIndex){
         stepIndex = i;
         renderWizard();
         return;
       }
-      // for jumping forward, validate sequentially
       for(let k=0; k<i; k++){
         const chk = steps[k].validate();
         if(!chk.ok){
@@ -279,18 +268,25 @@ function renderTimeline(root, activeIndex){
   });
 }
 
+function stepDisplayName(id){
+  if(id === "q") return "Step 1. Define the Question";
+  if(id === "sources") return "Step 2. Upload sources";
+  if(id === "args") return "Step 3. Add your arguments";
+  if(id === "brief") return "Step 4. Download your brief";
+  if(id === "video") return "Step 5. Download presentation";
+  return "Step";
+}
 function shortStepHint(id){
   if(id === "q") return "Topic + one-sentence question";
   if(id === "sources") return "PDFs / notes / datasets";
-  if(id === "args") return "Your stance + optional viewpoints";
+  if(id === "args") return "Stance + optional viewpoints";
   if(id === "brief") return "Generate + iterate versions";
   if(id === "video") return "Voice + export presentation";
   return "";
 }
 
-/* ---------- Step 1: Choose topic ---------- */
+/* ---------- Step 1 ---------- */
 function renderStep1(root){
-  // Title should be "Choose the topic" (as you requested)
   stepTitle.textContent = "Choose the topic";
 
   const t = document.createElement("input");
@@ -322,11 +318,10 @@ function validateStep1(){
   return { ok:true };
 }
 
-/* ---------- Step 2: Upload sources (PDF/notes/datasets) ---------- */
+/* ---------- Step 2 ---------- */
 function renderStep2(root){
   const wrap = document.createElement("div");
 
-  // Upload PDFs/notes
   const fileBox = document.createElement("div");
   fileBox.className = "filebox";
 
@@ -340,25 +335,20 @@ function renderStep2(root){
   pdfInput.accept = ".pdf,.txt,.md";
   pdfInput.addEventListener("change", async () => {
     const files = Array.from(pdfInput.files || []);
-    for(const f of files){
-      addDocument(f);
-    }
+    for(const f of files) addDocument(f);
     renderWizard();
   });
 
   uploadRow.appendChild(label("Upload PDFs / notes"));
   uploadRow.appendChild(pdfInput);
 
-  // Add dataset button
   const dsInput = document.createElement("input");
   dsInput.type = "file";
   dsInput.multiple = true;
   dsInput.accept = ".csv,.xlsx,.xls";
   dsInput.addEventListener("change", async () => {
     const files = Array.from(dsInput.files || []);
-    for(const f of files){
-      addDataset(f);
-    }
+    for(const f of files) addDataset(f);
     renderWizard();
   });
 
@@ -368,7 +358,6 @@ function renderStep2(root){
   fileBox.appendChild(uploadRow);
   wrap.appendChild(fileBox);
 
-  // Documents list
   const docsTitle = document.createElement("div");
   docsTitle.className = "label";
   docsTitle.style.marginTop = "14px";
@@ -378,15 +367,9 @@ function renderStep2(root){
   if(state.documents.length === 0){
     wrap.appendChild(mutedText("No documents uploaded yet."));
   } else {
-    state.documents
-      .slice()
-      .reverse() // most recent first in list
-      .forEach(doc => {
-        wrap.appendChild(renderDocumentPill(doc));
-      });
+    state.documents.slice().reverse().forEach(doc => wrap.appendChild(renderDocumentPill(doc)));
   }
 
-  // Datasets list
   const dsTitle = document.createElement("div");
   dsTitle.className = "label";
   dsTitle.style.marginTop = "14px";
@@ -396,12 +379,7 @@ function renderStep2(root){
   if(state.datasets.length === 0){
     wrap.appendChild(mutedText("No datasets uploaded yet."));
   } else {
-    state.datasets
-      .slice()
-      .reverse()
-      .forEach(ds => {
-        wrap.appendChild(renderDatasetPill(ds));
-      });
+    state.datasets.slice().reverse().forEach(ds => wrap.appendChild(renderDatasetPill(ds)));
   }
 
   root.appendChild(wrap);
@@ -415,16 +393,15 @@ function validateStep2(){
 }
 
 function addDocument(file){
-  const doc = {
+  state.documents.push({
     id: uid("doc"),
     filename: file.name,
     file,
-    mode: null, // 'manual' or 'auto'
+    mode: null,
     pageCount: null,
-    summaryBullets: null, // [{id,text,children:[{id,text}]}]
+    summaryBullets: null,
     selectedIds: new Set()
-  };
-  state.documents.push(doc);
+  });
 }
 
 function renderDocumentPill(doc){
@@ -476,7 +453,7 @@ function renderDocumentPill(doc){
   return pill;
 }
 
-/* ---------- PDF Review Modal (placeholders today) ---------- */
+/* ---------- PDF Review Modal ---------- */
 const modalRoot = $("modalRoot");
 
 async function openPdfReviewModal(doc){
@@ -513,12 +490,10 @@ async function openPdfReviewModal(doc){
   yesBtn.className = "btn primary";
   yesBtn.textContent = "Yes";
   yesBtn.addEventListener("click", async () => {
-    // Placeholder summary generation
     if(!doc.summaryBullets){
       const { pageCount, bullets } = await summarizePdfPlaceholder(doc.file);
       doc.pageCount = pageCount;
       doc.summaryBullets = bullets;
-      // default to all unchecked initially
       doc.selectedIds = new Set();
     }
     doc.mode = "manual";
@@ -538,7 +513,6 @@ async function openPdfReviewModal(doc){
   btnRow.appendChild(noBtn);
   modal.appendChild(btnRow);
 
-  // If already manual, show bullets immediately
   if(doc.mode === "manual" && doc.summaryBullets){
     renderModalBullets(modal, doc);
   }
@@ -547,7 +521,6 @@ async function openPdfReviewModal(doc){
 }
 
 function renderModalBullets(modal, doc){
-  // Remove any existing bullets block before re-rendering
   const existing = modal.querySelector(".bulletsBlock");
   if(existing) existing.remove();
 
@@ -584,7 +557,6 @@ function renderModalBullets(modal, doc){
     } else {
       doc.selectedIds.clear();
     }
-    // re-render to sync check states
     renderModalBullets(modal, doc);
   });
   const incText = document.createElement("div");
@@ -614,7 +586,6 @@ function renderModalBullets(modal, doc){
     cb.addEventListener("change", () => {
       if(cb.checked) doc.selectedIds.add(b.id);
       else doc.selectedIds.delete(b.id);
-      // keep UI responsive without full rerender
     });
 
     const txt = document.createElement("div");
@@ -688,12 +659,9 @@ function allBulletIds(doc){
   return ids;
 }
 
-/* Placeholder PDF summarizer with your bullet-count rules (approx by file size) */
 async function summarizePdfPlaceholder(file){
-  // Backend later: return real pageCount and bullet structure
-  // For now: infer pseudo page count using size
   const kb = Math.max(1, Math.round(file.size / 1024));
-  const pageCount = Math.max(1, Math.round(kb / 90)); // crude approximation
+  const pageCount = Math.max(1, Math.round(kb / 90));
   const target = bulletTargetFromPages(pageCount);
 
   const bullets = [];
@@ -716,38 +684,31 @@ async function summarizePdfPlaceholder(file){
     if(count >= 35) break;
   }
 
-  // enforce total count cap (bullets+subbullets)
-  const flatCount = bullets.reduce((acc,b)=> acc + 1 + (b.children?.length||0), 0);
-  if(flatCount > 35){
-    // trim aggressively
-    while(bullets.length && bullets.reduce((acc,b)=> acc + 1 + (b.children?.length||0), 0) > 35){
-      const last = bullets[bullets.length-1];
-      if(last.children && last.children.length) last.children.pop();
-      else bullets.pop();
-    }
+  while(bullets.length && bullets.reduce((acc,b)=> acc + 1 + (b.children?.length||0), 0) > 35){
+    const last = bullets[bullets.length-1];
+    if(last.children && last.children.length) last.children.pop();
+    else bullets.pop();
   }
 
   return { pageCount, bullets };
 }
 
 function bulletTargetFromPages(p){
-  if(p <= 1) return 6;        // 5–7
+  if(p <= 1) return 6;
   if(p <= 3) return 10;
   if(p <= 5) return 12;
-  // grow slowly, cap near 30 (35 only exceptional)
   return Math.min(30, 12 + Math.round((p-5) * 2));
 }
 
-/* ---------- Datasets (placeholders) ---------- */
+/* ---------- Datasets ---------- */
 function addDataset(file){
-  const ds = {
+  state.datasets.push({
     id: uid("ds"),
     filename: file.name,
     file,
-    profile: null,    // {rows, cols, variables, inferredType}
-    requests: []      // {id, prompt, tables:[], charts:[], includeIds:Set}
-  };
-  state.datasets.push(ds);
+    profile: null,
+    requests: []
+  });
 }
 
 function renderDatasetPill(ds){
@@ -822,7 +783,6 @@ async function openDatasetModal(ds){
   header.appendChild(close);
   modal.appendChild(header);
 
-  // profile
   if(!ds.profile){
     ds.profile = await analyzeDatasetPlaceholder(ds.file);
   }
@@ -840,7 +800,6 @@ async function openDatasetModal(ds){
 
   modal.appendChild(hr());
 
-  // prompt input
   const lab = document.createElement("div");
   lab.className = "label";
   lab.textContent = "What analysis do you want? (command-style prompt)";
@@ -865,7 +824,6 @@ async function openDatasetModal(ds){
     if(!p) return;
 
     const req = runDatasetRequestPlaceholder(ds, p);
-    // Re-render modal with new results
     closeModal();
     openDatasetResultsModal(ds, req.id);
   });
@@ -918,7 +876,6 @@ async function openDatasetResultsModal(ds, reqId){
 
   modal.appendChild(hr());
 
-  // fake tables/plots list with include checkboxes
   const items = [...req.tables, ...req.charts];
   const selectedCount = items.filter(it => req.includeIds.has(it.id)).length;
 
@@ -986,8 +943,6 @@ async function openDatasetResultsModal(ds, reqId){
 }
 
 async function analyzeDatasetPlaceholder(file){
-  // Backend later: parse CSV/XLSX and detect time/panel structure.
-  // Placeholder profile:
   const name = file.name.toLowerCase();
   const inferredType = name.includes("panel") ? "panel" : (name.includes("time") ? "time series" : "cross section");
   return {
@@ -1021,14 +976,8 @@ function runDatasetRequestPlaceholder(ds, prompt){
   return req;
 }
 
-/* ---------- Step 3: Your arguments + viewpoints (merged) ---------- */
+/* ---------- Step 3 (no repeated sentence; best practice updated) ---------- */
 function renderStep3(root){
-  const p = document.createElement("p");
-  p.className = "muted";
-  p.style.marginTop = "0";
-  p.textContent = "Draft a short stance in sentences or bullet points.";
-  root.appendChild(p);
-
   root.appendChild(label("Your argument"));
 
   const stance = document.createElement("textarea");
@@ -1039,11 +988,10 @@ function renderStep3(root){
   stance.addEventListener("input", () => state.stanceText = stance.value);
   root.appendChild(stance);
 
-  root.appendChild(infoBox("Best practice", "Separate facts (from sources) from assumptions, mechanisms, and recommendations."));
+  root.appendChild(infoBox("Best practice", "Separate facts from assumptions, mechanisms, and recommendations."));
 
   root.appendChild(hr());
 
-  // Optional viewpoints merged here (polls + experts)
   const opt = document.createElement("div");
   opt.className = "muted small";
   opt.textContent = "Optional: add viewpoints below (please include the source).";
@@ -1075,43 +1023,34 @@ function validateStep3(){
   return { ok:true };
 }
 
-/* ---------- Step 4: Generate + versions + iterate ---------- */
+/* ---------- Step 4 ---------- */
 async function renderWizardWithGeneration(){
-  // show step 4 and render “working” UI first
-  renderWizard(); // will render Step 4 content, but Step 4 will detect state and show working if needed
-  // Trigger generation:
+  renderWizard();
   await generateAndStoreNewReportVersion();
-  // Re-render Step 4 with final outputs
   renderWizard();
 }
 
 function renderStep4(root){
-  // Working state: if no reports exist yet, show working UI and auto-trigger is done by transition
   if(state.reports.length === 0){
     root.appendChild(renderWorking("We are working on the report", "Generating a draft brief from your sources and inputs. (Placeholder today; backend later.)"));
     return;
   }
 
-  // Active report
   const report = getActiveReport();
   if(!report){
     root.appendChild(mutedText("No report selected."));
     return;
   }
 
-  // Title editor (report title, not filename)
   root.appendChild(label("Report title (inside the report)"));
   const titleInput = document.createElement("input");
   titleInput.className = "input";
   titleInput.value = report.title;
-  titleInput.addEventListener("input", () => {
-    report.title = titleInput.value;
-  });
+  titleInput.addEventListener("input", () => { report.title = titleInput.value; });
   root.appendChild(titleInput);
 
   root.appendChild(hr());
 
-  // One sentence main takeaway
   const one = document.createElement("div");
   one.innerHTML = `<div style="font-weight:900;margin-bottom:6px;">Main takeaway (1 sentence)</div>
                    <div class="muted">${escapeHtml(report.oneSentence)}</div>`;
@@ -1119,9 +1058,8 @@ function renderStep4(root){
 
   root.appendChild(hr());
 
-  // Bullet summary (≤15)
   const b = document.createElement("div");
-  b.innerHTML = `<div style="font-weight:900;margin-bottom:8px;">Summary (≤ 15 bullets)</div>`;
+  b.innerHTML = `<div style="font-weight:900;margin-bottom:8px;">Bullet Point Summary of the Report</div>`;
   const ul = document.createElement("ul");
   ul.style.margin = "0";
   ul.style.paddingLeft = "18px";
@@ -1137,24 +1075,31 @@ function renderStep4(root){
 
   root.appendChild(hr());
 
-  // Download area
   const dlRow = document.createElement("div");
   dlRow.style.display = "flex";
   dlRow.style.gap = "10px";
   dlRow.style.flexWrap = "wrap";
   dlRow.style.justifyContent = "flex-end";
 
-  const downloadBtn = document.createElement("button");
-  downloadBtn.className = "btn primary";
-  downloadBtn.textContent = "Download brief (placeholder file)";
-  downloadBtn.addEventListener("click", () => downloadBlob(report.fileBlob, report.filename));
+  const downloadSummaryBtn = document.createElement("button");
+  downloadSummaryBtn.className = "btn primary";
+  downloadSummaryBtn.textContent = "Download Brief Summary";
+  downloadSummaryBtn.addEventListener("click", () => downloadBlob(report.fileBlob, report.filename));
+  dlRow.appendChild(downloadSummaryBtn);
 
-  dlRow.appendChild(downloadBtn);
+  const downloadLatestBtn = document.createElement("button");
+  downloadLatestBtn.className = "btn danger";
+  downloadLatestBtn.textContent = "Download Latest Policy Brief";
+  downloadLatestBtn.addEventListener("click", () => {
+    // Placeholder: same file for now. Backend later will provide real PDF brief.
+    downloadBlob(report.fileBlob, report.filename);
+  });
+  dlRow.appendChild(downloadLatestBtn);
+
   root.appendChild(dlRow);
 
   root.appendChild(hr());
 
-  // Iteration question + jump back controls
   const q = document.createElement("div");
   q.innerHTML = `<div style="font-weight:900;margin-bottom:8px;">Would you like to correct or change something on the report?</div>
                  <div class="muted small">You can return to earlier steps to add or change inputs. Versions will be kept.</div>`;
@@ -1166,36 +1111,26 @@ function renderStep4(root){
   jumpRow.style.flexWrap = "wrap";
   jumpRow.style.marginTop = "10px";
 
-  const to1 = mkBtn("Return to Step 1", () => { stepIndex = 0; renderWizard(); });
-  const to2 = mkBtn("Return to Step 2", () => { stepIndex = 1; renderWizard(); });
-  const to3 = mkBtn("Return to Step 3", () => { stepIndex = 2; renderWizard(); });
-
-  jumpRow.appendChild(to1);
-  jumpRow.appendChild(to2);
-  jumpRow.appendChild(to3);
+  jumpRow.appendChild(mkBtn("Return to Step 1", () => { stepIndex = 0; renderWizard(); }));
+  jumpRow.appendChild(mkBtn("Return to Step 2", () => { stepIndex = 1; renderWizard(); }));
+  jumpRow.appendChild(mkBtn("Return to Step 3", () => { stepIndex = 2; renderWizard(); }));
 
   root.appendChild(jumpRow);
 
-  // Next button should move to Step 5; ensure label is correct
   nextBtn.textContent = "Next";
 }
 
 async function generateAndStoreNewReportVersion(){
-  // Working indicator inside Step 4 will show before this is called.
   const versionNum = state.reports.length + 1;
-  const dateTag = dateTagNow(); // e.g. March0526
-  const defaultFilename = `report${versionNum}_${dateTag}.txt`; // placeholder; backend later will produce PDF
+  const dateTag = dateTagNow();
+  const defaultFilename = `report${versionNum}_${dateTag}.txt`;
 
   const report = await generateReportPlaceholder(defaultFilename);
-
-  // store
-  state.reports.unshift(report); // most recent on top
+  state.reports.unshift(report);
   state.activeReportId = report.id;
 }
 
 async function generateReportPlaceholder(filename){
-  // Backend later: produce PDF + citations + reliability score + selected items.
-  // Here: generate a placeholder "report" file (txt) the user can download.
   const title = (state.reportTitle || state.topic || "Policy Brief").trim();
 
   const oneSentence = `Recommendation: Based on the uploaded sources and your analysis, prioritize a targeted policy design and disclose key uncertainties. (Placeholder)`;
@@ -1221,7 +1156,7 @@ ${state.question}
 ## Main takeaway
 ${oneSentence}
 
-## Summary (key points)
+## Bullet point summary
 ${bullets.map(x => `- ${x}`).join("\n")}
 
 ## Inputs captured
@@ -1259,7 +1194,6 @@ function getActiveReport(){
   return state.reports[0];
 }
 
-/* Versions panel behavior */
 function renderVersionsPanel(){
   versionsList.innerHTML = "";
   if(state.reports.length === 0){
@@ -1290,39 +1224,32 @@ function renderVersionsPanel(){
     const btns = document.createElement("div");
     btns.className = "versionBtns";
 
-    const download = mkBtn("Download", () => downloadBlob(rep.fileBlob, rep.filename));
-    const del = mkBtn("Delete", () => {
+    btns.appendChild(mkBtn("Download", () => downloadBlob(rep.fileBlob, rep.filename)));
+    btns.appendChild(mkBtn("Delete", () => {
       state.reports = state.reports.filter(r => r.id !== rep.id);
       if(state.activeReportId === rep.id){
         state.activeReportId = state.reports[0]?.id || null;
       }
       renderWizard();
-    });
-
-    btns.appendChild(download);
-    btns.appendChild(del);
+    }));
 
     top.appendChild(left);
     top.appendChild(btns);
 
     item.appendChild(top);
 
-    // Rename filename (editable)
     const rename = document.createElement("input");
     rename.className = "inlineInput";
     rename.value = rep.filename;
     rename.addEventListener("input", () => {
       rep.filename = rename.value;
-      // keep it simple; no validation needed now
       name.textContent = rep.filename;
     });
     item.appendChild(rename);
 
     item.addEventListener("click", (e) => {
-      // avoid click when typing in rename field
       if(e.target === rename) return;
       state.activeReportId = rep.id;
-      // Pull the summary into main box by re-rendering step 4
       renderWizard();
     });
 
@@ -1330,9 +1257,8 @@ function renderVersionsPanel(){
   });
 }
 
-/* ---------- Step 5: Presentation generation ---------- */
+/* ---------- Step 5 (no popup; speaker preview inline) ---------- */
 function renderStep5(root){
-  // Must select which version to use
   if(state.reports.length === 0){
     root.appendChild(mutedText("No report versions yet. Generate a report in Step 4 first."));
     return;
@@ -1340,7 +1266,6 @@ function renderStep5(root){
 
   const report = getActiveReport();
 
-  // Report version selector
   root.appendChild(label("Select a report version for the presentation"));
   const sel = document.createElement("select");
   sel.className = "input";
@@ -1360,7 +1285,6 @@ function renderStep5(root){
 
   root.appendChild(hr());
 
-  // Voice selector
   root.appendChild(label("Choose voice"));
   const voiceRow = document.createElement("div");
   voiceRow.style.display = "flex";
@@ -1374,17 +1298,56 @@ function renderStep5(root){
     b.textContent = v;
     b.addEventListener("click", () => {
       state.video.voice = v;
-      // Preview should read the title using that voice (later). Placeholder now.
-      openVoicePreviewModal(v, getActiveReport().title);
       renderWizard();
     });
     voiceRow.appendChild(b);
   });
   root.appendChild(voiceRow);
 
+  // Inline speaker preview (no popup)
+  const previewWrap = document.createElement("div");
+  previewWrap.style.marginTop = "10px";
+
+  const speakerRow = document.createElement("div");
+  speakerRow.style.display = "flex";
+  speakerRow.style.alignItems = "center";
+  speakerRow.style.gap = "10px";
+  speakerRow.style.flexWrap = "wrap";
+
+  const speakerBtn = document.createElement("button");
+  speakerBtn.className = "btn";
+  speakerBtn.textContent = "🔊 Preview voice";
+
+  const desc = document.createElement("div");
+  desc.className = "muted small";
+
+  function previewText(){
+    const v = state.video.voice;
+    if(v === "Ava") return "Listen to Ava’s voice.";
+    if(v === "Jeff") return "Listen to Jeff’s voice.";
+    return "No voice selected.";
+  }
+  desc.textContent = previewText();
+  speakerBtn.disabled = (state.video.voice === "No voice");
+
+  speakerBtn.addEventListener("click", async () => {
+    // Placeholder: backend will generate real TTS and playback.
+    // For now, simulate.
+    speakerBtn.disabled = true;
+    const old = speakerBtn.textContent;
+    speakerBtn.textContent = `Playing ${state.video.voice}…`;
+    await sleep(900);
+    speakerBtn.textContent = old;
+    speakerBtn.disabled = (state.video.voice === "No voice");
+  });
+
+  speakerRow.appendChild(speakerBtn);
+  speakerRow.appendChild(desc);
+  previewWrap.appendChild(speakerRow);
+  root.appendChild(previewWrap);
+
   root.appendChild(hr());
 
-  // Generate presentation
   if(state.video.status === "working"){
     root.appendChild(renderWorking("We are working on the video presentation", "Generating a 3-minute presentation. (Placeholder today; backend later.)"));
     return;
@@ -1403,7 +1366,7 @@ function renderStep5(root){
     state.video.status = "working";
     renderWizard();
 
-    await sleep(1100); // “working” feel
+    await sleep(1100);
     await generateVideoPlaceholder();
 
     state.video.status = "ready";
@@ -1437,7 +1400,6 @@ function renderStep5(root){
 }
 
 async function generateVideoPlaceholder(){
-  // Backend later: produce a real mp4 + optional voiceover
   state.video.ready = true;
   state.video.reportId = state.activeReportId;
   state.video.blob = null;
@@ -1464,42 +1426,7 @@ Voice: ${voice}
 (Placeholder. Backend will generate slides + voiceover + downloadable video.)`;
 }
 
-/* Voice preview modal (placeholder) */
-function openVoicePreviewModal(voice, title){
-  modalRoot.classList.remove("hidden");
-  modalRoot.innerHTML = "";
-  const modal = document.createElement("div");
-  modal.className = "modal";
-
-  const header = document.createElement("div");
-  header.className = "modalHeader";
-
-  const left = document.createElement("div");
-  left.innerHTML = `
-    <div class="modalTitle">Voice preview: ${escapeHtml(voice)}</div>
-    <div class="muted small">This will read your project title with the selected voice (backend later).</div>
-  `;
-  const close = document.createElement("button");
-  close.className = "modalClose";
-  close.textContent = "Close";
-  close.addEventListener("click", () => closeModal());
-  header.appendChild(left);
-  header.appendChild(close);
-  modal.appendChild(header);
-
-  const box = document.createElement("div");
-  box.className = "howStep";
-  box.innerHTML = `
-    <div style="font-weight:850;margin-bottom:6px;">Title</div>
-    <div class="muted">${escapeHtml(title)}</div>
-    <div class="muted small" style="margin-top:10px;">(Audio preview will be enabled when voices are wired.)</div>
-  `;
-  modal.appendChild(box);
-
-  modalRoot.appendChild(modal);
-}
-
-/* ---------- How it works (stylish + expand/collapse all) ---------- */
+/* ---------- How it works ---------- */
 const toggleAllHowBtn = $("toggleAllHow");
 const howStepsRoot = $("howSteps");
 let howExpandedAll = false;
@@ -1582,7 +1509,7 @@ toggleAllHowBtn.addEventListener("click", () => {
   toggleAllHowBtn.textContent = howExpandedAll ? "Collapse all" : "Expand all";
 });
 
-/* ---------- Small utilities ---------- */
+/* ---------- Utilities ---------- */
 function label(text){
   const l = document.createElement("div");
   l.className = "label";
@@ -1660,19 +1587,11 @@ function renderWorking(title, text){
 }
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
-/* ---------- Validations that depend on placeholders ---------- */
-function validateStep2(){
-  if(state.documents.length === 0 && state.datasets.length === 0){
-    return { ok:false, msg:"Please upload at least one document or dataset." };
-  }
-  return { ok:true };
-}
-
 /* ---------- Boot ---------- */
 function boot(){
   initTheme();
   showView("home");
   renderTimeline(timelineHome, stepIndex);
-  renderHow(); // prebuild
+  renderHow();
 }
 boot();
