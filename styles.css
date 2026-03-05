@@ -14,17 +14,16 @@
   --line: rgba(255,255,255,.10);
 
   /* “13g-ish” neon accents */
-  --primary: #B7FF4A;   /* neon green */
-  --accent1: #FFD84A;   /* yellow */
-  --accent2: #FF4FD8;   /* pink */
-  --accent3: #4FD6FF;   /* cyan */
+  --primary: #B7FF4A;
+  --accent1: #FFD84A;
+  --accent2: #FF4FD8;
+  --accent3: #4FD6FF;
   --danger: #FF5A6A;
 
   --focus: rgba(183,255,74,.35);
 }
 
 html[data-theme="light"]{
-  /* Light mode inspired by AI2027-like clean palette */
   --bg: #F7F7FB;
   --bg2: rgba(255,255,255,.7);
   --card: rgba(255,255,255,.75);
@@ -43,15 +42,27 @@ html[data-theme="light"]{
 }
 
 *{ box-sizing:border-box; }
+
 body{
   margin:0;
   font-family: var(--font);
   color: var(--text);
+
+  /* IMPORTANT: uniform background */
   background:
     radial-gradient(1000px 560px at 20% 0%, rgba(255,79,216,.12), transparent 60%),
     radial-gradient(900px 520px at 80% 15%, rgba(183,255,74,.12), transparent 58%),
     radial-gradient(900px 520px at 50% 100%, rgba(79,214,255,.10), transparent 55%),
     var(--bg);
+
+  /* IMPORTANT: keep footer at bottom */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main.container{
+  flex: 1;
 }
 
 .topbar{
@@ -81,7 +92,7 @@ body{
 .title{font-weight:900; letter-spacing:.2px}
 .subtitle{color:var(--muted); font-size:13px}
 
-/* NEW: centered nav and right nav */
+/* Center nav + right nav */
 .navCenter{
   display:flex;
   gap:10px;
@@ -194,9 +205,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   gap:12px;
   cursor:pointer;
 }
-.howStepTitle{
-  font-weight:850;
-}
+.howStepTitle{ font-weight:850; }
 .howStepDesc{
   margin-top:8px;
   color:var(--muted);
@@ -205,10 +214,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   display:none;
 }
 .howStep.open .howStepDesc{display:block;}
-.howStepHint{
-  color:var(--muted);
-  font-size:12.5px;
-}
+.howStepHint{ color:var(--muted); font-size:12.5px; }
 
 .label{display:block; margin:12px 0 6px; color:var(--muted); font-size:13px}
 .input,.textarea{
@@ -220,9 +226,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   color:var(--text);
   outline:none;
 }
-.input:focus,.textarea:focus{
-  box-shadow: 0 0 0 4px var(--focus);
-}
+.input:focus,.textarea:focus{ box-shadow: 0 0 0 4px var(--focus); }
 .textarea{resize:vertical}
 
 /* spacing for Start button on home */
@@ -290,16 +294,22 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 .stepName{font-weight:850}
 .stepMini{color:var(--muted); font-size:12.5px; margin-top:2px; line-height:1.25}
 
-/* Start view grid; main card expands */
+/* Wizard grid:
+   - default = 2 columns (Step 4/5)
+   - single = 1 column (Step 1–3), uses full width */
 .grid{
   display:grid;
   grid-template-columns: minmax(0, 1fr) 340px;
   gap:16px;
   align-items:start;
 }
+.grid.single{
+  grid-template-columns: 1fr;
+}
 @media (max-width: 980px){
   .grid{grid-template-columns:1fr}
 }
+
 .mainCard{min-height: 520px; width:100%;}
 .stepHeader{display:flex; justify-content:space-between; align-items:flex-start;}
 .stepKicker{
@@ -359,7 +369,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   display:flex;
   gap:8px;
   align-items:center;
-  flex-wrap: nowrap; /* never stack */
+  flex-wrap: nowrap;
 }
 
 hr.sep{
@@ -403,9 +413,10 @@ hr.sep{
   border-radius: 14px;
   padding: 8px 12px;
   cursor:pointer;
-  color: var(--text);     /* fixed visibility */
+  color: var(--text);
   font-weight: 750;
 }
+
 .bullets{
   margin-top: 12px;
   display:grid;
@@ -489,12 +500,14 @@ hr.sep{
   color:var(--text);
 }
 
+/* IMPORTANT: footer has no border-top, sits at bottom */
 .footer{
   padding:18px 16px 24px;
   text-align:center;
   color:var(--muted);
-  border-top:1px solid var(--line);
-  margin-top:34px;
+  margin-top: auto;     /* sticks to bottom */
+  background: transparent;
+  border-top: none;     /* removes “break line” */
 }
 .dot{margin:0 8px}
 .hidden{display:none;}
