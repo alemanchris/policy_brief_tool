@@ -95,6 +95,17 @@ body{
   border-color: var(--line);
   background: color-mix(in srgb, var(--card) 72%, transparent);
 }
+.navCenter{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  margin: 0 auto;   /* centers this group */
+}
+.navRight{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
 
 .iconbtn{
   border:1px solid var(--line);
@@ -229,6 +240,8 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 }
 .btn:hover{ transform: translateY(-1px); }
 .btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
+
+#startBtn { margin-top: 12px; }
 
 .error{
   margin-top:12px;
