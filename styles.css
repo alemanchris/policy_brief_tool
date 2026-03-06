@@ -130,7 +130,7 @@ main.container{ flex: 1; }
 .container{max-width:1240px; margin:22px auto; padding:0 16px;}
 .view.hidden{display:none}
 
-/* IMPORTANT: workflow panel fixed identical on Home + Start */
+/* Workflow panel fixed identical on Home + Start */
 .layout{
   display:grid;
   grid-template-columns: 290px 1fr;
@@ -143,7 +143,7 @@ main.container{ flex: 1; }
 }
 
 .sidebar{
-  width: 290px;               /* lock width so it never changes */
+  width: 290px;               /* lock width */
   position: sticky;
   top: 74px;                  /* same everywhere */
   border:1px solid var(--line);
@@ -285,40 +285,33 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 .stepName{font-weight:850}
 .stepMini{color:var(--muted); font-size:12.5px; margin-top:2px; line-height:1.25}
 
-/* ✅ KEY CHANGE:
-   Main card stays SAME width in all steps.
-   Versions panel no longer steals width; it floats on the right when visible. */
+/* Main step box constant width across all steps.
+   Versions panel floats on the right and does not shrink main. */
 .grid{
   position: relative;
-  display:block;         /* single-column always */
+  display: block;
 }
 
-/* Main step card always full width */
 .mainCard{min-height: 520px; width:100%;}
 
-/* When versions are shown, reserve space on the right (equal to versions width + gap) */
+/* reserve space when versions panel is visible */
 .grid.hasVersions{
-  padding-right: 356px; /* 340 panel + ~16 gap */
+  padding-right: 356px; /* 340 panel + 16 gap */
 }
 
-/* Versions panel floats on the right without shrinking the main card */
 .versionsCard{
   width: 340px;
   position: absolute;
   right: 0;
   top: 0;
-  align-self:start;
   max-height: calc(100vh - 120px);
   overflow:auto;
 }
 
-/* On small screens, versions panel becomes normal flow under main card */
 @media (max-width: 980px){
   .grid.hasVersions{ padding-right: 0; }
   .versionsCard{
     position: relative;
-    right:auto;
-    top:auto;
     width: 100%;
     margin-top: 16px;
     max-height: none;
