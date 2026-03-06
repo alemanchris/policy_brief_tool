@@ -1,6 +1,5 @@
 :root{
   --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  --radius: 16px;
   --radius2: 20px;
   --shadow: 0 12px 36px rgba(0,0,0,.35);
 
@@ -13,12 +12,19 @@
   --line: rgba(255,255,255,.10);
 
   --primary: #B7FF4A;
-  --accent1: #FFD84A;
   --accent2: #FF4FD8;
   --accent3: #4FD6FF;
   --danger: #FF5A6A;
 
   --focus: rgba(183,255,74,.35);
+
+  /* Fixed layout constants */
+  --sidebar-w: 290px;
+  --versions-w: 340px;
+  --gap: 16px;
+
+  /* This is the width of content column in Home+Start (keeps positions identical) */
+  --content-max: 920px;
 }
 
 html[data-theme="light"]{
@@ -31,7 +37,6 @@ html[data-theme="light"]{
   --line: rgba(16,19,34,.12);
 
   --primary: #2E6BFF;
-  --accent1: #2E6BFF;
   --accent2: #FF3D7F;
   --accent3: #00A3FF;
   --focus: rgba(46,107,255,.20);
@@ -45,7 +50,6 @@ body{
   margin:0;
   font-family: var(--font);
   color: var(--text);
-
   background:
     radial-gradient(1000px 560px at 20% 0%, rgba(255,79,216,.12), transparent 60%),
     radial-gradient(900px 520px at 80% 15%, rgba(183,255,74,.12), transparent 58%),
@@ -53,11 +57,11 @@ body{
     var(--bg);
 
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  display:flex;
+  flex-direction:column;
 }
 
-main.container{ flex: 1; }
+main.container{ flex:1; }
 
 .topbar{
   display:flex;
@@ -86,17 +90,8 @@ main.container{ flex: 1; }
 .title{font-weight:900; letter-spacing:.2px}
 .subtitle{color:var(--muted); font-size:13px}
 
-.navCenter{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  margin: 0 auto;
-}
-.navRight{
-  display:flex;
-  gap:10px;
-  align-items:center;
-}
+.navCenter{display:flex; gap:10px; align-items:center; margin:0 auto;}
+.navRight{display:flex; gap:10px; align-items:center;}
 
 .navlink{
   color:var(--muted);
@@ -120,32 +115,22 @@ main.container{ flex: 1; }
   color: var(--text);
 }
 .iconbtn:hover{ transform: translateY(-1px); }
-.icon{
-  display:inline-grid;
-  place-items:center;
-  width:18px;
-  height:18px;
-}
+.icon{ display:inline-grid; place-items:center; width:18px; height:18px; }
 
 .container{max-width:1240px; margin:22px auto; padding:0 16px;}
-.view.hidden{display:none}
+.view.hidden{display:none;}
 
-/* ✅ Same layout everywhere (Home + Start) */
+/* ✅ One layout for Home + Start */
 .layout{
   display:grid;
-  grid-template-columns: 290px 1fr;
-  gap:16px;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  gap: var(--gap);
   align-items:start;
 }
 
-@media (max-width: 980px){
-  .layout{ grid-template-columns: 1fr; }
-  .sidebar{ position: relative; top:auto; width:auto; }
-}
-
-/* ✅ Workflow panel always identical position + width */
+/* ✅ Sidebar is identical everywhere */
 .sidebar{
-  width: 290px;
+  width: var(--sidebar-w);
   position: sticky;
   top: 74px;
   border:1px solid var(--line);
@@ -155,22 +140,16 @@ main.container{ flex: 1; }
   box-shadow: var(--shadow);
 }
 .sideTitle{ font-weight:850; margin-bottom:10px; }
-.sideNote{
-  margin-top:12px;
-  color:var(--muted);
-  font-size:12.5px;
-  line-height:1.35;
-}
+.sideNote{ margin-top:12px; color:var(--muted); font-size:12.5px; line-height:1.35; }
 
+/* ✅ Fix content column width + left edge (Home and Start match perfectly) */
 .content{min-width:0;}
-
-/* ✅ IMPORTANT FIX: remove Home-only max-width so Home + Start have same content column behavior */
-.hero{
-  display:grid;
-  gap:16px;
-  max-width: none;    /* <-- THIS is what makes workflow "feel" consistent */
+.contentInner{
+  width: min(var(--content-max), 100%);
 }
 
+/* Home hero */
+.hero{display:grid; gap:16px;}
 h1{margin:0; font-size:40px; line-height:1.05}
 p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 
@@ -184,42 +163,19 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 
 .howWrap{max-width:980px; margin:0 auto;}
 .howCard{padding:18px;}
-.howHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:14px;
-  margin-bottom:10px;
-}
+.howHeader{display:flex; justify-content:space-between; align-items:center; gap:14px; margin-bottom:10px;}
 .howSteps{display:grid; gap:10px; margin-top:12px;}
-.howStep{
-  border:1px solid var(--line);
-  border-radius: 16px;
-  padding:12px 12px;
-  background: color-mix(in srgb, var(--card2) 80%, transparent);
-}
-.howStepTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-  cursor:pointer;
-}
-.howStepTitle{ font-weight:850; }
-.howStepDesc{
-  margin-top:8px;
-  color:var(--muted);
-  font-size:14px;
-  line-height:1.5;
-  display:none;
-}
+.howStep{border:1px solid var(--line); border-radius:16px; padding:12px; background: color-mix(in srgb, var(--card2) 80%, transparent);}
+.howStepTop{display:flex; justify-content:space-between; gap:12px; cursor:pointer;}
+.howStepTitle{font-weight:850;}
+.howStepHint{color:var(--muted); font-size:12.5px;}
+.howStepDesc{margin-top:8px; color:var(--muted); font-size:14px; line-height:1.5; display:none;}
 .howStep.open .howStepDesc{display:block;}
-.howStepHint{ color:var(--muted); font-size:12.5px; }
 
 .label{display:block; margin:12px 0 6px; color:var(--muted); font-size:13px}
 .input,.textarea{
   width:100%;
-  padding:12px 12px;
+  padding:12px;
   border-radius:14px;
   border:1px solid var(--line);
   background: color-mix(in srgb, var(--bg2) 70%, transparent);
@@ -229,7 +185,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 .input:focus,.textarea:focus{ box-shadow: 0 0 0 4px var(--focus); }
 .textarea{resize:vertical}
 
-#startBtn { margin-top: 12px; }
+#startBtn{ margin-top: 12px; }
 
 .btn{
   border:1px solid var(--line);
@@ -250,24 +206,18 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   border-color: color-mix(in srgb, var(--danger) 55%, var(--line) 45%);
 }
 .btn:hover{ transform: translateY(-1px); }
-.btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
 
-.error{
-  margin-top:12px;
-  color: var(--danger);
-  font-size:14px;
-}
-.error.hidden{display:none}
+.error{ margin-top:12px; color: var(--danger); font-size:14px; }
+.error.hidden{display:none;}
 .hint{color:var(--muted); font-size:13px}
 
 .timeline{display:grid; gap:10px}
 .stepItem{
-  padding:10px 10px;
+  padding:10px;
   border-radius: 16px;
   border:1px solid var(--line);
   background: color-mix(in srgb, var(--card2) 85%, transparent);
   display:flex;
-  align-items:flex-start;
   gap:10px;
   opacity:.72;
   transition: opacity .15s ease, transform .15s ease;
@@ -278,10 +228,7 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   border-color: color-mix(in srgb, var(--primary) 45%, var(--line) 55%);
   background: color-mix(in srgb, var(--primary) 10%, var(--card2) 90%);
 }
-.stepItem.done{
-  opacity:.92;
-  border-color: color-mix(in srgb, var(--accent3) 30%, var(--line) 70%);
-}
+.stepItem.done{opacity:.92; border-color: color-mix(in srgb, var(--accent3) 30%, var(--line) 70%);}
 .stepBadge{
   width:28px; height:28px;
   border-radius:12px;
@@ -293,228 +240,63 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 .stepName{font-weight:850}
 .stepMini{color:var(--muted); font-size:12.5px; margin-top:2px; line-height:1.25}
 
-/* ✅ MAIN FIX: step card is full width always.
-   Versions panel floats right without shrinking main. */
-.grid{
-  position: relative;
-  display: block;
+/* ✅ Wizard grid is ALWAYS the same -> no shifting between steps */
+.wizardGrid{
+  display:grid;
+  grid-template-columns: 1fr var(--versions-w);
+  gap: var(--gap);
+  align-items:start;
 }
 
-.mainCard{
-  width: 100%;
-  min-height: 520px;
-}
+/* Main card constant */
+.mainCard{min-height: 520px; width:100%;}
 
-/* When versions visible, reserve space on right so main content doesn't get covered */
-.grid.hasVersions{
-  padding-right: 356px; /* 340 + 16 gap */
-}
-
-.versionsCard{
-  width: 340px;
-  position: absolute;
-  right: 0;
-  top: 0;
-  max-height: calc(100vh - 120px);
-  overflow:auto;
-}
-
-@media (max-width: 980px){
-  .grid.hasVersions{ padding-right: 0; }
-  .versionsCard{
-    position: relative;
-    width: 100%;
-    margin-top: 16px;
-    max-height: none;
-  }
-}
-
-.stepHeader{display:flex; justify-content:space-between; align-items:flex-start;}
-.stepKicker{
-  font-size:12.5px;
-  color:var(--muted);
-  letter-spacing:.2px;
-  margin-bottom:6px;
-}
+.stepKicker{font-size:12.5px; color:var(--muted); letter-spacing:.2px; margin-bottom:6px;}
 .m0{margin:0;}
 .small{font-size:12.5px;}
 .muted{color:var(--muted);}
 
-.actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  margin-top:16px;
-}
+.actions{display:flex; gap:10px; justify-content:flex-end; margin-top:16px;}
 
-.filebox{
-  border:1px dashed color-mix(in srgb, var(--line) 70%, transparent);
-  border-radius: 16px;
-  padding:12px;
-  background: color-mix(in srgb, var(--card2) 85%, transparent);
-}
-
-.pill{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:8px 10px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background: color-mix(in srgb, var(--card2) 85%, transparent);
-  margin-top:10px;
-}
-.pillLeft{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-  min-width:0;
-}
-.pillTitle{
-  font-weight:850;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-  max-width: 520px;
-}
-@media (max-width: 980px){
-  .pillTitle{ max-width: 240px; }
-}
-.pillMeta{color:var(--muted); font-size:12.5px;}
-.pillActions{
-  flex: 0 0 auto;
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap: nowrap;
-}
-
-hr.sep{
-  border:none;
-  border-top:1px solid var(--line);
-  margin:14px 0;
-}
-
-.modalRoot{
-  position: fixed;
-  inset: 0;
-  display:grid;
-  place-items:center;
-  padding: 16px;
-  background: rgba(0,0,0,.55);
-  z-index: 1000;
-}
-.modalRoot.hidden{display:none;}
-.modal{
-  width: min(900px, 100%);
-  max-height: 85vh;
-  overflow:auto;
-  border-radius: 20px;
-  border:1px solid var(--line);
-  background: color-mix(in srgb, var(--card) 92%, transparent);
-  box-shadow: var(--shadow);
-  padding: 16px;
-}
-.modalHeader{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  align-items:flex-start;
-  margin-bottom:10px;
-}
-.modalTitle{font-weight:900;}
-.modalClose{
-  border:1px solid var(--line);
-  background: color-mix(in srgb, var(--card2) 85%, transparent);
-  border-radius: 14px;
-  padding: 8px 12px;
-  cursor:pointer;
-  color: var(--text);
-  font-weight: 750;
-}
-
-.bullets{
-  margin-top: 12px;
-  display:grid;
-  gap:8px;
-}
-.bulletItem{
-  border:1px solid var(--line);
-  border-radius: 16px;
-  padding:10px;
-  background: color-mix(in srgb, var(--card2) 90%, transparent);
-}
-.bulletTop{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-}
-.checkbox{
-  width:18px; height:18px;
-  margin-top:2px;
-}
-.bulletText{font-size:14.5px; line-height:1.45;}
-.subBullets{margin-left:28px; margin-top:8px; display:grid; gap:6px;}
-.subRow{display:flex; gap:10px; align-items:flex-start;}
-.subText{color:var(--muted); font-size:13.5px; line-height:1.45;}
-
-.working{
-  display:grid;
-  gap:12px;
-  align-items:center;
-  justify-items:center;
-  padding: 18px 0 6px;
-}
-.spinner{
-  width: 56px; height: 56px;
-  border-radius: 999px;
-  border: 3px solid color-mix(in srgb, var(--line) 70%, transparent);
-  border-top-color: color-mix(in srgb, var(--primary) 75%, transparent);
-  animation: spin 1s linear infinite;
-}
-@keyframes spin{ to { transform: rotate(360deg); } }
-.workingTitle{font-weight:900; font-size:16px;}
-.workingText{color:var(--muted); text-align:center; max-width: 520px; line-height:1.5;}
-
-.versionsHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  margin-bottom:10px;
-}
+.versionsHeader{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:10px;}
 .versionsTitle{font-weight:900;}
 .versionsList{display:grid; gap:10px;}
-.versionItem{
-  border:1px solid var(--line);
-  border-radius: 16px;
-  padding:10px;
-  background: color-mix(in srgb, var(--card2) 90%, transparent);
-  cursor:pointer;
-}
+.versionItem{border:1px solid var(--line); border-radius:16px; padding:10px; background: color-mix(in srgb, var(--card2) 90%, transparent); cursor:pointer;}
 .versionItem:hover{transform: translateY(-1px);}
 .versionTop{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
 .versionName{font-weight:850;}
 .versionMeta{color:var(--muted); font-size:12.5px; margin-top:3px;}
 .versionBtns{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
-.inlineInput{
-  width: 100%;
-  margin-top:8px;
-  padding:10px 10px;
-  border-radius:14px;
-  border:1px solid var(--line);
-  background: color-mix(in srgb, var(--bg2) 70%, transparent);
-  color:var(--text);
+.inlineInput{width:100%; margin-top:8px; padding:10px; border-radius:14px; border:1px solid var(--line); background: color-mix(in srgb, var(--bg2) 70%, transparent); color:var(--text);}
+
+/* ✅ This hides the versions card without changing layout */
+.vhidden{
+  visibility: hidden;
+  pointer-events: none;
 }
+
+/* Modal (unchanged essentials) */
+.modalRoot{position:fixed; inset:0; display:grid; place-items:center; padding:16px; background: rgba(0,0,0,.55); z-index:1000;}
+.modalRoot.hidden{display:none;}
+.modal{width:min(900px, 100%); max-height:85vh; overflow:auto; border-radius:20px; border:1px solid var(--line); background: color-mix(in srgb, var(--card) 92%, transparent); box-shadow: var(--shadow); padding:16px;}
+.modalHeader{display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px;}
+.modalTitle{font-weight:900;}
+.modalClose{border:1px solid var(--line); background: color-mix(in srgb, var(--card2) 85%, transparent); border-radius:14px; padding:8px 12px; cursor:pointer; color: var(--text); font-weight:750;}
 
 .footer{
   padding:18px 16px 24px;
   text-align:center;
   color:var(--muted);
   margin-top: auto;
-  background: transparent;
-  border-top: none;
+  border-top:none;
 }
 .dot{margin:0 8px}
 .hidden{display:none;}
+
+/* Responsive */
+@media (max-width: 980px){
+  .layout{grid-template-columns: 1fr;}
+  .sidebar{position:relative; top:auto; width:auto;}
+  .contentInner{width:100%;}
+  .wizardGrid{grid-template-columns: 1fr;}
+}
