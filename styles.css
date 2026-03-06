@@ -300,3 +300,60 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
   .contentInner{width:100%;}
   .wizardGrid{grid-template-columns: 1fr;}
 }
+
+/* ---------- Step 2: make upload + lists look polished ---------- */
+
+/* Force Step 2 upload panel to look like a card section */
+.filebox{
+  border: 1px solid var(--line) !important;
+  border-radius: 18px !important;
+  padding: 14px !important;
+  background: color-mix(in srgb, var(--card) 88%, transparent) !important;
+  box-shadow: none !important;
+}
+
+/* Add spacing between upload controls */
+.filebox .label{ margin-top: 0; }
+.filebox input[type="file"]{ width: 100%; }
+
+/* Document pill: prevent “status” from appearing as part of filename */
+.pill{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+/* Left section truncates; right section never wraps */
+.pillLeft{
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+.pillTitle{
+  display:block;
+  font-weight: 850;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  max-width: 100% !important;
+}
+.pillMeta{
+  display:block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Buttons ALWAYS stay right, side-by-side */
+.pillActions{
+  flex: 0 0 auto !important;
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* Ensure buttons don’t shrink and wrap */
+.pillActions .btn{
+  flex: 0 0 auto !important;
+}
