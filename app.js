@@ -183,13 +183,16 @@ function renderWizard(){
   if(nextBtn) nextBtn.textContent = (stepIndex === steps.length - 1) ? "Finish" : "Next";
 
   // Keep your existing versions panel behavior (if it exists in your layout)
-  if(versionsCard){
-    if(stepIndex >= 3){
-      // show
+  if (versionsCard) {
+    if (stepIndex >= 3) {
+      // Show versions panel (handle both hiding mechanisms)
       versionsCard.classList.remove("hidden");
+      versionsCard.classList.remove("vhidden");
       renderVersionsPanel();
     } else {
-      // hide
+      // Hide without breaking layout (prefer vhidden if your CSS uses it)
+      versionsCard.classList.add("vhidden");
+      // keep this too in case some pages still use hidden:
       versionsCard.classList.add("hidden");
     }
   }
