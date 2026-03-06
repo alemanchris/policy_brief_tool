@@ -16,13 +16,11 @@
       </div>
     </div>
 
-    <!-- Center: Home + Start -->
     <nav class="navCenter">
       <a href="#" id="navHome" class="navlink active">Home</a>
       <a href="#" id="navStart" class="navlink">Start</a>
     </nav>
 
-    <!-- Right: How it works + Theme toggle -->
     <div class="navRight">
       <a href="#" id="navHow" class="navlink">How it works</a>
       <button id="themeToggle" class="iconbtn" aria-label="Toggle theme" title="Toggle theme">
@@ -44,29 +42,32 @@
         </aside>
 
         <section class="content">
-          <div class="hero">
-            <h1>Build a tailored policy brief</h1>
-            <p>
-              Start with a question. Add sources and your perspective. Generate a brief and multiple versions of it.
-              Export your preferred brief and generate a 3-minute presentation.
-            </p>
+          <!-- ✅ fixed content width wrapper -->
+          <div class="contentInner">
+            <div class="hero">
+              <h1>Build a tailored policy brief</h1>
+              <p>
+                Start with a question. Add sources and your perspective. Generate a brief and multiple versions of it.
+                Export your preferred brief and generate a 3-minute presentation.
+              </p>
 
-            <div class="card">
-              <h2>Start your policy brief</h2>
+              <div class="card">
+                <h2>Start your policy brief</h2>
 
-              <label class="label">Topic</label>
-              <input id="topicInput" class="input"
-                placeholder="e.g., Should the UAE expand unemployment insurance?" />
+                <label class="label">Topic</label>
+                <input id="topicInput" class="input"
+                  placeholder="e.g., Should the UAE expand unemployment insurance?" />
 
-              <label class="label">Policy question (one sentence)</label>
-              <textarea id="questionInput" class="textarea" rows="2"
-                placeholder="e.g., What are the expected impacts on employment, fiscal costs, and inequality over 3 years?"></textarea>
+                <label class="label">Policy question (one sentence)</label>
+                <textarea id="questionInput" class="textarea" rows="2"
+                  placeholder="e.g., What are the expected impacts on employment, fiscal costs, and inequality over 3 years?"></textarea>
 
-              <button id="startBtn" class="btn primary">Start</button>
-              <div id="startError" class="error hidden"></div>
+                <button id="startBtn" class="btn primary">Start</button>
+                <div id="startError" class="error hidden"></div>
+              </div>
+
+              <div class="hint">Tip: This is a wizard, we'll guide you through the steps.</div>
             </div>
-
-            <div class="hint">Tip: This is a wizard, we'll guide you through the steps.</div>
           </div>
         </section>
       </div>
@@ -101,36 +102,38 @@
         </aside>
 
         <section class="content">
-          <!-- IMPORTANT: id added so JS can switch between 1-column and 2-column layout -->
-          <div class="grid" id="wizardGrid">
-            <div class="card mainCard">
-              <div class="stepHeader">
-                <div>
-                  <div class="stepKicker" id="progressLabel"></div>
-                  <h2 id="stepTitle" class="m0">Step</h2>
-                  <p id="stepDesc" class="muted m0"></p>
+          <!-- ✅ fixed content width wrapper -->
+          <div class="contentInner">
+            <div class="wizardGrid" id="wizardGrid">
+              <div class="card mainCard">
+                <div class="stepHeader">
+                  <div>
+                    <div class="stepKicker" id="progressLabel"></div>
+                    <h2 id="stepTitle" class="m0">Step</h2>
+                    <p id="stepDesc" class="muted m0"></p>
+                  </div>
                 </div>
-              </div>
 
-              <div id="stepContent"></div>
+                <div id="stepContent"></div>
 
-              <div class="actions">
-                <button id="backBtn" class="btn">Back</button>
-                <button id="nextBtn" class="btn primary">Next</button>
-              </div>
-
-              <div id="wizardError" class="error hidden"></div>
-            </div>
-
-            <!-- Versions panel (only visible from Step 4 onwards) -->
-            <div class="card versionsCard hidden" id="versionsCard">
-              <div class="versionsHeader">
-                <div>
-                  <div class="versionsTitle">Report versions</div>
-                  <div class="muted small">Most recent at the top.</div>
+                <div class="actions">
+                  <button id="backBtn" class="btn">Back</button>
+                  <button id="nextBtn" class="btn primary">Next</button>
                 </div>
+
+                <div id="wizardError" class="error hidden"></div>
               </div>
-              <div id="versionsList" class="versionsList"></div>
+
+              <!-- ✅ always occupies space; we use visibility-hidden instead of display:none -->
+              <div class="card versionsCard vhidden" id="versionsCard">
+                <div class="versionsHeader">
+                  <div>
+                    <div class="versionsTitle">Report versions</div>
+                    <div class="muted small">Most recent at the top.</div>
+                  </div>
+                </div>
+                <div id="versionsList" class="versionsList"></div>
+              </div>
             </div>
           </div>
         </section>
