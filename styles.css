@@ -357,3 +357,85 @@ p{margin:0; color:var(--muted); font-size:16px; line-height:1.55}
 .pillActions .btn{
   flex: 0 0 auto !important;
 }
+/* ===== Review modal bullet list polish ===== */
+
+/* Make the modal content breathe */
+.modal{ padding: 18px; }
+
+/* Sticky area for the include-all control */
+.reviewToolbar{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 10px 0 8px;
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+
+/* Cleaner bullets list */
+.bullets{
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Each bullet looks like a card row */
+.bulletItem{
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--card2) 90%, transparent);
+}
+
+/* Bullet top row: checkbox + number + text */
+.bulletTop{
+  display: grid;
+  grid-template-columns: 18px 26px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+/* Bullet numbering pill */
+.bulletNum{
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: -2px;
+}
+
+/* Text wrapping */
+.bulletText{
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+
+/* Sub-bullets are indented and compact */
+.subBullets{
+  margin-left: 54px;
+  margin-top: 8px;
+  display: grid;
+  gap: 8px;
+}
+.subRow{
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.subText{
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+/* Make the checkbox align nicely (some browsers render weird) */
+.checkbox{
+  margin: 0;
+  transform: translateY(2px);
+}
