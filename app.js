@@ -23,7 +23,7 @@ function initTheme(){
   const saved = localStorage.getItem("pbs_theme");
   setTheme(saved || "dark");
 }
-themeToggle.addEventListener("click", () => {
+themeToggle?.addEventListener("click", () => {
   const current = document.documentElement.getAttribute("data-theme") || "dark";
   setTheme(current === "dark" ? "light" : "dark");
 });
@@ -45,102 +45,66 @@ function moonSvg(){
 const state = {
   topic: "",
   question: "",
-  // step2: documents + datasets
-  documents: [], // {id, filename, file, mode:'auto'|'manual'|null, summaryBullets:[], selectedIds:Set, pageCount?:number}
-  datasets: [],  // {id, filename, file, profile:null|{...}, requests:[] }
-  // step3:
+  documents: [], // {id, filename, file, mode, pageCount, summaryBullets, selectedIds:Set}
+  datasets: [],  // {id, filename, file, profile, requests}
   stanceText: "",
   pollsText: "",
   expertsText: "",
-  // step4:
   reportTitle: "",
-  reports: [],   // versions: {id, createdAt, title, filename, oneSentence, bullets, content, fileBlob}
+  reports: [],   // versions newest first: {id, createdAt, title, filename, oneSentence, bullets, content, fileBlob}
   activeReportId: null,
-  // step5:
   video: { status: "idle", reportId: null, voice: "Ava", ready: false, blob: null }
 };
 
 let stepIndex = 0;
 
-/* ---------- 5 steps (aligned to your workflow) ---------- */
+/* ---------- 5 steps ---------- */
 const steps = [
-  {
-    id: "q",
-    name: "Define the Question",
-    desc: "Choose the topic and your one-sentence policy question.",
-    render: renderStep1,
-    validate: validateStep1
-  },
-  {
-    id: "sources",
-    name: "Upload sources",
-    desc: "Upload PDFs, notes, and datasets. Review what to include.",
-    render: renderStep2,
-    validate: validateStep2
-  },
-  {
-    id: "args",
-    name: "Your arguments and perspectives",
-    desc: "Draft a short stance in sentences or bullet points.",
-    render: renderStep3,
-    validate: validateStep3
-  },
-  {
-    id: "brief",
-    name: "Download your brief",
-    desc: "We generate the report and let you iterate versions.",
-    render: renderStep4,
-    validate: () => ({ ok: true })
-  },
-  {
-    id: "video",
-    name: "Download a 3 min presentation",
-    desc: "Pick a report version and generate a short presentation.",
-    render: renderStep5,
-    validate: () => ({ ok: true })
-  }
+  { id: "q",      name: "Define the Question", desc: "Choose the topic and your one-sentence policy question.", render: renderStep1, validate: validateStep1 },
+  { id: "sources",name: "Upload sources", desc: "Upload PDFs, notes, and datasets. Review what to include.", render: renderStep2, validate: validateStep2 },
+  { id: "args",   name: "Your arguments and perspectives", desc: "Draft a short stance in sentences or bullet points.", render: renderStep3, validate: validateStep3 },
+  { id: "brief",  name: "Download your brief", desc: "We generate the report and let you iterate versions.", render: renderStep4, validate: () => ({ ok:true }) },
+  { id: "video",  name: "Download a 3 min presentation", desc: "Pick a report version and generate a short presentation.", render: renderStep5, validate: () => ({ ok:true }) },
 ];
 
-/* ---------- Navigation (Home / How / Start) ---------- */
-const views = {
-  home: $("viewHome"),
-  how: $("viewHow"),
-  start: $("viewStart")
-};
-
+/* ---------- Views / nav ---------- */
+const views = { home: $("viewHome"), how: $("viewHow"), start: $("viewStart") };
 const navHome = $("navHome");
 const navHow  = $("navHow");
 const navStart = $("navStart");
 
 function showView(which){
-  Object.values(views).forEach(v => v.classList.add("hidden"));
-  views[which].classList.remove("hidden");
-  [navHome, navHow, navStart].forEach(a => a.classList.remove("active"));
-  if(which === "home") navHome.classList.add("active");
-  if(which === "how") navHow.classList.add("active");
-  if(which === "start") navStart.classList.add("active");
+  Object.values(views).forEach(v => v?.classList.add("hidden"));
+  views[which]?.classList.remove("hidden");
+  [navHome, navHow, navStart].forEach(a => a?.classList.remove("active"));
+  if(which === "home") navHome?.classList.add("active");
+  if(which === "how") navHow?.classList.add("active");
+  if(which === "start") navStart?.classList.add("active");
 }
 
-navHome.addEventListener("click", (e)=>{ e.preventDefault(); showView("home"); });
-navHow.addEventListener("click", (e)=>{ e.preventDefault(); showView("how"); renderHow(); });
-navStart.addEventListener("click", (e)=>{ e.preventDefault(); showView("start"); ensureWizardStart(); });
+navHome?.addEventListener("click", (e)=>{ e.preventDefault(); showView("home"); });
+navHow?.addEventListener("click", (e)=>{ e.preventDefault(); showView("how"); renderHow(); });
+navStart?.addEventListener("click", (e)=>{ e.preventDefault(); showView("start"); ensureWizardStart(); });
 
-/* ---------- Home start button ---------- */
+/* ---------- Home start ---------- */
 const startBtn = $("startBtn");
 const topicInput = $("topicInput");
 const questionInput = $("questionInput");
 const startError = $("startError");
 
-startBtn.addEventListener("click", () => {
-  const t = (topicInput.value || "").trim();
-  const q = (questionInput.value || "").trim();
+startBtn?.addEventListener("click", () => {
+  const t = (topicInput?.value || "").trim();
+  const q = (questionInput?.value || "").trim();
+  startError?.classList.add("hidden");
 
-  startError.classList.add("hidden");
   if(!t || !q){
-    startError.textContent = "Please provide a topic and a one-sentence policy question.";
-    startError.classList.remove("hidden");
+    if(startError){
+      startError.textContent = "Please provide a topic and a one-sentence policy question.";
+      startError.classList.remove("hidden");
+    }
     return;
   }
+
   state.topic = t;
   state.question = q;
   if(!state.reportTitle) state.reportTitle = t;
@@ -150,7 +114,7 @@ startBtn.addEventListener("click", () => {
   renderWizard();
 });
 
-/* ---------- Wizard controls ---------- */
+/* ---------- Wizard DOM ---------- */
 const backBtn = $("backBtn");
 const nextBtn = $("nextBtn");
 const wizardError = $("wizardError");
@@ -162,10 +126,9 @@ const timelineHome = $("timelineHome");
 const timelineWizard = $("timelineWizard");
 const versionsCard = $("versionsCard");
 const versionsList = $("versionsList");
-const wizardGrid = $("wizardGrid");
 
-backBtn.addEventListener("click", () => {
-  wizardError.classList.add("hidden");
+backBtn?.addEventListener("click", () => {
+  wizardError?.classList.add("hidden");
   if(stepIndex > 0){
     stepIndex -= 1;
     renderWizard();
@@ -174,16 +137,18 @@ backBtn.addEventListener("click", () => {
   }
 });
 
-nextBtn.addEventListener("click", async () => {
-  wizardError.classList.add("hidden");
+nextBtn?.addEventListener("click", async () => {
+  wizardError?.classList.add("hidden");
   const v = steps[stepIndex].validate();
   if(!v.ok){
-    wizardError.textContent = v.msg || "Please fix issues before continuing.";
-    wizardError.classList.remove("hidden");
+    if(wizardError){
+      wizardError.textContent = v.msg || "Please fix issues before continuing.";
+      wizardError.classList.remove("hidden");
+    }
     return;
   }
 
-  // Step 3 -> Step 4 triggers generation animation + new version creation
+  // Step 3 -> Step 4 triggers generation
   if(steps[stepIndex].id === "args"){
     stepIndex = 3;
     await renderWizardWithGeneration();
@@ -196,7 +161,6 @@ nextBtn.addEventListener("click", async () => {
   }
 });
 
-/* ---------- Wizard render ---------- */
 function ensureWizardStart(){
   stepIndex = 0;
   renderWizard();
@@ -204,28 +168,35 @@ function ensureWizardStart(){
 
 function renderWizard(){
   renderTimeline(timelineWizard, stepIndex);
-  renderTimeline(timelineHome, stepIndex); // home sidebar reflects state too
+  renderTimeline(timelineHome, stepIndex);
 
-  progressLabel.textContent = `Step ${stepIndex + 1} of ${steps.length}`;
-  stepTitle.textContent = steps[stepIndex].name;
-  stepDesc.textContent = steps[stepIndex].desc;
+  if(progressLabel) progressLabel.textContent = `Step ${stepIndex + 1} of ${steps.length}`;
+  if(stepTitle) stepTitle.textContent = steps[stepIndex].name;
+  if(stepDesc) stepDesc.textContent = steps[stepIndex].desc;
 
-  stepContent.innerHTML = "";
-  steps[stepIndex].render(stepContent);
+  if(stepContent){
+    stepContent.innerHTML = "";
+    steps[stepIndex].render(stepContent);
+  }
 
-  backBtn.textContent = (stepIndex === 0) ? "Back to Home" : "Back";
-  nextBtn.textContent = (stepIndex === steps.length - 1) ? "Finish" : "Next";
+  if(backBtn) backBtn.textContent = (stepIndex === 0) ? "Back to Home" : "Back";
+  if(nextBtn) nextBtn.textContent = (stepIndex === steps.length - 1) ? "Finish" : "Next";
 
-  // Versions panel appears from Step 4 onward; for Steps 1–3, expand content to full width.
-  if(stepIndex >= 3){
-    versionsCard.classList.remove("vhidden");   // show (but layout stays)
-    renderVersionsPanel();
-  } else {
-    versionsCard.classList.add("vhidden");      // hide WITHOUT layout change
+  // Keep your existing versions panel behavior (if it exists in your layout)
+  if(versionsCard){
+    if(stepIndex >= 3){
+      // show
+      versionsCard.classList.remove("hidden");
+      renderVersionsPanel();
+    } else {
+      // hide
+      versionsCard.classList.add("hidden");
+    }
   }
 }
 
 function renderTimeline(root, activeIndex){
+  if(!root) return;
   root.innerHTML = "";
   steps.forEach((s, i) => {
     const div = document.createElement("div");
@@ -251,18 +222,21 @@ function renderTimeline(root, activeIndex){
     div.appendChild(info);
 
     div.addEventListener("click", () => {
+      // allow backward navigation freely
       if(i <= activeIndex){
         stepIndex = i;
         renderWizard();
         return;
       }
-      // forward jumps: validate sequentially
+      // forward navigation requires previous steps validation
       for(let k=0; k<i; k++){
         const chk = steps[k].validate();
         if(!chk.ok){
           stepIndex = k;
-          wizardError.textContent = chk.msg || "Please complete this step first.";
-          wizardError.classList.remove("hidden");
+          if(wizardError){
+            wizardError.textContent = chk.msg || "Please complete this step first.";
+            wizardError.classList.remove("hidden");
+          }
           renderWizard();
           return;
         }
@@ -292,11 +266,11 @@ function shortStepHint(id){
   return "";
 }
 
-/* ---------- Step 1: Choose topic ---------- */
+/* ---------- Step 1 ---------- */
 function renderStep1(root){
-  // Title should be "Choose the topic"
-  stepTitle.textContent = "Choose the topic";
+  if(stepTitle) stepTitle.textContent = "Choose the topic";
 
+  root.appendChild(label("Topic"));
   const t = document.createElement("input");
   t.className = "input";
   t.placeholder = "Topic";
@@ -305,17 +279,15 @@ function renderStep1(root){
     state.topic = t.value;
     if(!state.reportTitle) state.reportTitle = t.value;
   });
+  root.appendChild(t);
 
+  root.appendChild(label("Policy question (one sentence)"));
   const q = document.createElement("textarea");
   q.className = "textarea";
   q.rows = 2;
   q.placeholder = "Policy question (one sentence)";
   q.value = state.question || "";
   q.addEventListener("input", () => state.question = q.value);
-
-  root.appendChild(label("Topic"));
-  root.appendChild(t);
-  root.appendChild(label("Policy question (one sentence)"));
   root.appendChild(q);
 }
 
@@ -326,89 +298,58 @@ function validateStep1(){
   return { ok:true };
 }
 
-/* ---------- Step 2: Upload sources (PDF/notes/datasets) ---------- */
+/* ---------- Step 2 ---------- */
 function renderStep2(root){
-  const wrap = document.createElement("div");
-
-  // Upload PDFs/notes
   const fileBox = document.createElement("div");
   fileBox.className = "filebox";
 
-  const uploadRow = document.createElement("div");
-  uploadRow.style.display = "grid";
-  uploadRow.style.gap = "10px";
-
+  // Upload PDFs/notes
+  fileBox.appendChild(label("Upload PDFs / notes"));
   const pdfInput = document.createElement("input");
   pdfInput.type = "file";
   pdfInput.multiple = true;
   pdfInput.accept = ".pdf,.txt,.md";
-  pdfInput.addEventListener("change", async () => {
+  pdfInput.addEventListener("change", () => {
     const files = Array.from(pdfInput.files || []);
-    for(const f of files){
-      addDocument(f);
-    }
+    for(const f of files) addDocument(f);
     renderWizard();
   });
+  fileBox.appendChild(pdfInput);
 
-  uploadRow.appendChild(label("Upload PDFs / notes"));
-  uploadRow.appendChild(pdfInput);
-
-  // Add dataset button
+  // Add datasets
+  fileBox.appendChild(label("Add dataset"));
   const dsInput = document.createElement("input");
   dsInput.type = "file";
   dsInput.multiple = true;
   dsInput.accept = ".csv,.xlsx,.xls";
-  dsInput.addEventListener("change", async () => {
+  dsInput.addEventListener("change", () => {
     const files = Array.from(dsInput.files || []);
-    for(const f of files){
-      addDataset(f);
-    }
+    for(const f of files) addDataset(f);
     renderWizard();
   });
+  fileBox.appendChild(dsInput);
 
-  uploadRow.appendChild(label("Add dataset"));
-  uploadRow.appendChild(dsInput);
+  root.appendChild(fileBox);
 
-  fileBox.appendChild(uploadRow);
-  wrap.appendChild(fileBox);
-
-  // Documents list
-  const docsTitle = document.createElement("div");
-  docsTitle.className = "label";
-  docsTitle.style.marginTop = "14px";
-  docsTitle.textContent = "Documents uploaded";
-  wrap.appendChild(docsTitle);
-
+  // Documents list (NUMBERED)
+  root.appendChild(label("Documents uploaded"));
   if(state.documents.length === 0){
-    wrap.appendChild(mutedText("No documents uploaded yet."));
+    root.appendChild(mutedText("No documents uploaded yet."));
   } else {
-    state.documents
-      .slice()
-      .reverse()
-      .forEach(doc => {
-        wrap.appendChild(renderDocumentPill(doc));
-      });
+    state.documents.slice().reverse().forEach((doc, idx) => {
+      root.appendChild(renderDocumentPill(doc, idx + 1));
+    });
   }
 
-  // Datasets list
-  const dsTitle = document.createElement("div");
-  dsTitle.className = "label";
-  dsTitle.style.marginTop = "14px";
-  dsTitle.textContent = "Datasets uploaded";
-  wrap.appendChild(dsTitle);
-
+  // Datasets list (NUMBERED)
+  root.appendChild(label("Datasets uploaded"));
   if(state.datasets.length === 0){
-    wrap.appendChild(mutedText("No datasets uploaded yet."));
+    root.appendChild(mutedText("No datasets uploaded yet."));
   } else {
-    state.datasets
-      .slice()
-      .reverse()
-      .forEach(ds => {
-        wrap.appendChild(renderDatasetPill(ds));
-      });
+    state.datasets.slice().reverse().forEach((ds, idx) => {
+      root.appendChild(renderDatasetPill(ds, idx + 1));
+    });
   }
-
-  root.appendChild(wrap);
 }
 
 function validateStep2(){
@@ -419,19 +360,19 @@ function validateStep2(){
 }
 
 function addDocument(file){
-  const doc = {
+  state.documents.push({
     id: uid("doc"),
     filename: file.name,
     file,
-    mode: null, // 'manual' or 'auto'
+    mode: null,          // manual/auto/null
     pageCount: null,
-    summaryBullets: null, // [{id,text,children:[{id,text}]}]
+    summaryBullets: null,
     selectedIds: new Set()
-  };
-  state.documents.push(doc);
+  });
 }
 
-function renderDocumentPill(doc){
+/* ✅ Document pill: numbered + buttons always right */
+function renderDocumentPill(doc, number){
   const pill = document.createElement("div");
   pill.className = "pill";
 
@@ -440,15 +381,14 @@ function renderDocumentPill(doc){
 
   const title = document.createElement("div");
   title.className = "pillTitle";
-  title.textContent = doc.filename;
+  title.textContent = `${number}. ${doc.filename}`;
 
   const meta = document.createElement("div");
   meta.className = "pillMeta";
-  const modeLabel =
+  meta.textContent =
     doc.mode === "manual" ? `Selection: manual (${doc.selectedIds.size} items)` :
     doc.mode === "auto" ? "Selection: auto (tool decides)" :
     "Selection: not reviewed";
-  meta.textContent = modeLabel;
 
   left.appendChild(title);
   left.appendChild(meta);
@@ -461,7 +401,7 @@ function renderDocumentPill(doc){
   reviewBtn.textContent = "Review";
   reviewBtn.addEventListener("click", async () => {
     await openPdfReviewModal(doc);
-    renderWizard();
+    // modal callbacks will call renderWizard() when closing
   });
 
   const removeBtn = document.createElement("button");
@@ -480,267 +420,18 @@ function renderDocumentPill(doc){
   return pill;
 }
 
-/* ---------- PDF Review Modal (placeholders today) ---------- */
-const modalRoot = $("modalRoot");
-
-async function openPdfReviewModal(doc){
-  modalRoot.classList.remove("hidden");
-  modalRoot.innerHTML = "";
-
-  const modal = document.createElement("div");
-  modal.className = "modal";
-
-  const header = document.createElement("div");
-  header.className = "modalHeader";
-
-  const left = document.createElement("div");
-  left.innerHTML = `
-    <div class="modalTitle">Review: ${escapeHtml(doc.filename)}</div>
-    <div class="muted small">Would you like to choose the arguments that will be used from this article?</div>
-  `;
-
-  const close = document.createElement("button");
-  close.className = "modalClose";
-  close.textContent = "Close";
-  close.addEventListener("click", () => closeModal());
-
-  header.appendChild(left);
-  header.appendChild(close);
-  modal.appendChild(header);
-
-  const btnRow = document.createElement("div");
-  btnRow.style.display = "flex";
-  btnRow.style.gap = "10px";
-  btnRow.style.flexWrap = "wrap";
-
-  const yesBtn = document.createElement("button");
-  yesBtn.className = "btn primary";
-  yesBtn.textContent = "Yes";
-  yesBtn.addEventListener("click", async () => {
-    if(!doc.summaryBullets){
-      const { pageCount, bullets } = await summarizePdfPlaceholder(doc.file);
-      doc.pageCount = pageCount;
-      doc.summaryBullets = bullets;
-      doc.selectedIds = new Set();
-    }
-    doc.mode = "manual";
-    renderModalBullets(modal, doc);
-  });
-
-  const noBtn = document.createElement("button");
-  noBtn.className = "btn";
-  noBtn.textContent = "No, choose as you see fit";
-  noBtn.addEventListener("click", () => {
-    doc.mode = "auto";
-    doc.selectedIds = new Set();
-    closeModal();
-  });
-
-  btnRow.appendChild(yesBtn);
-  btnRow.appendChild(noBtn);
-  modal.appendChild(btnRow);
-
-  if(doc.mode === "manual" && doc.summaryBullets){
-    renderModalBullets(modal, doc);
-  }
-
-  modalRoot.appendChild(modal);
-}
-
-function renderModalBullets(modal, doc){
-  const existing = modal.querySelector(".bulletsBlock");
-  if(existing) existing.remove();
-
-  const block = document.createElement("div");
-  block.className = "bulletsBlock";
-
-  block.appendChild(hr());
-
-  const topRow = document.createElement("div");
-  topRow.style.display = "flex";
-  topRow.style.alignItems = "center";
-  topRow.style.justifyContent = "space-between";
-  topRow.style.gap = "12px";
-  topRow.style.flexWrap = "wrap";
-
-  const info = document.createElement("div");
-  info.innerHTML = `
-    <div style="font-weight:850;">Concise summary (placeholder)</div>
-    <div class="muted small">Tick items to include in the policy brief. Include all is available.</div>
-  `;
-
-  const includeAll = document.createElement("label");
-  includeAll.style.display = "flex";
-  includeAll.style.alignItems = "center";
-  includeAll.style.gap = "8px";
-  includeAll.style.cursor = "pointer";
-  const inc = document.createElement("input");
-  inc.type = "checkbox";
-  inc.className = "checkbox";
-  inc.checked = allBulletIds(doc).length > 0 && allBulletIds(doc).every(id => doc.selectedIds.has(id));
-  inc.addEventListener("change", () => {
-    if(inc.checked){
-      allBulletIds(doc).forEach(id => doc.selectedIds.add(id));
-    } else {
-      doc.selectedIds.clear();
-    }
-    renderModalBullets(modal, doc);
-  });
-  const incText = document.createElement("div");
-  incText.className = "small";
-  incText.textContent = "Include all";
-  includeAll.appendChild(inc);
-  includeAll.appendChild(incText);
-
-  topRow.appendChild(info);
-  topRow.appendChild(includeAll);
-  block.appendChild(topRow);
-
-  const bulletsWrap = document.createElement("div");
-  bulletsWrap.className = "bullets";
-
-  (doc.summaryBullets || []).forEach(b => {
-    const item = document.createElement("div");
-    item.className = "bulletItem";
-
-    const top = document.createElement("div");
-    top.className = "bulletTop";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.className = "checkbox";
-    cb.checked = doc.selectedIds.has(b.id);
-    cb.addEventListener("change", () => {
-      if(cb.checked) doc.selectedIds.add(b.id);
-      else doc.selectedIds.delete(b.id);
-    });
-
-    const txt = document.createElement("div");
-    txt.className = "bulletText";
-    txt.textContent = b.text;
-
-    top.appendChild(cb);
-    top.appendChild(txt);
-    item.appendChild(top);
-
-    if(b.children && b.children.length){
-      const subs = document.createElement("div");
-      subs.className = "subBullets";
-      b.children.forEach(s => {
-        const row = document.createElement("div");
-        row.className = "subRow";
-        const scb = document.createElement("input");
-        scb.type = "checkbox";
-        scb.className = "checkbox";
-        scb.checked = doc.selectedIds.has(s.id);
-        scb.addEventListener("change", () => {
-          if(scb.checked) doc.selectedIds.add(s.id);
-          else doc.selectedIds.delete(s.id);
-        });
-        const st = document.createElement("div");
-        st.className = "subText";
-        st.textContent = s.text;
-        row.appendChild(scb);
-        row.appendChild(st);
-        subs.appendChild(row);
-      });
-      item.appendChild(subs);
-    }
-
-    bulletsWrap.appendChild(item);
-  });
-
-  block.appendChild(bulletsWrap);
-
-  const doneRow = document.createElement("div");
-  doneRow.style.display = "flex";
-  doneRow.style.justifyContent = "flex-end";
-  doneRow.style.gap = "10px";
-  doneRow.style.marginTop = "12px";
-
-  const doneBtn = document.createElement("button");
-  doneBtn.className = "btn primary";
-  doneBtn.textContent = "Done";
-  doneBtn.addEventListener("click", () => {
-    doc.mode = "manual";
-    closeModal();
-  });
-
-  doneRow.appendChild(doneBtn);
-  block.appendChild(doneRow);
-
-  modal.appendChild(block);
-}
-
-function closeModal(){
-  modalRoot.classList.add("hidden");
-  modalRoot.innerHTML = "";
-}
-
-function allBulletIds(doc){
-  const ids = [];
-  (doc.summaryBullets || []).forEach(b => {
-    ids.push(b.id);
-    (b.children || []).forEach(s => ids.push(s.id));
-  });
-  return ids;
-}
-
-/* Placeholder PDF summarizer with your bullet-count rules (approx by file size) */
-async function summarizePdfPlaceholder(file){
-  const kb = Math.max(1, Math.round(file.size / 1024));
-  const pageCount = Math.max(1, Math.round(kb / 90));
-  const target = bulletTargetFromPages(pageCount);
-
-  const bullets = [];
-  let count = 0;
-  for(let i=1; i<=target; i++){
-    count++;
-    const id = uid("b");
-    const childCount = (i % 4 === 0) ? 2 : (i % 7 === 0 ? 1 : 0);
-    const children = [];
-    for(let j=1; j<=childCount; j++){
-      count++;
-      if(count > 35) break;
-      children.push({ id: uid("s"), text: `Supporting point ${i}.${j} (placeholder)` });
-    }
-    bullets.push({
-      id,
-      text: `Key idea ${i} from the document (placeholder)`,
-      children
-    });
-    if(count >= 35) break;
-  }
-
-  while(bullets.length && bullets.reduce((acc,b)=> acc + 1 + (b.children?.length||0), 0) > 35){
-    const last = bullets[bullets.length-1];
-    if(last.children && last.children.length) last.children.pop();
-    else bullets.pop();
-  }
-
-  return { pageCount, bullets };
-}
-
-function bulletTargetFromPages(p){
-  if(p <= 1) return 6;
-  if(p <= 3) return 10;
-  if(p <= 5) return 12;
-  return Math.min(30, 12 + Math.round((p-5) * 2));
-}
-
-/* ---------- Datasets (placeholders) ---------- */
 function addDataset(file){
-  const ds = {
+  state.datasets.push({
     id: uid("ds"),
     filename: file.name,
     file,
     profile: null,
     requests: []
-  };
-  state.datasets.push(ds);
+  });
 }
 
-function renderDatasetPill(ds){
+/* ✅ Dataset pill: numbered */
+function renderDatasetPill(ds, number){
   const pill = document.createElement("div");
   pill.className = "pill";
 
@@ -749,7 +440,7 @@ function renderDatasetPill(ds){
 
   const title = document.createElement("div");
   title.className = "pillTitle";
-  title.textContent = ds.filename;
+  title.textContent = `${number}. ${ds.filename}`;
 
   const meta = document.createElement("div");
   meta.className = "pillMeta";
@@ -787,225 +478,7 @@ function renderDatasetPill(ds){
   return pill;
 }
 
-async function openDatasetModal(ds){
-  modalRoot.classList.remove("hidden");
-  modalRoot.innerHTML = "";
-
-  const modal = document.createElement("div");
-  modal.className = "modal";
-
-  const header = document.createElement("div");
-  header.className = "modalHeader";
-
-  const left = document.createElement("div");
-  left.innerHTML = `
-    <div class="modalTitle">Dataset: ${escapeHtml(ds.filename)}</div>
-    <div class="muted small">Ask for econometric analysis or plots. (Placeholder today; backend later.)</div>
-  `;
-
-  const close = document.createElement("button");
-  close.className = "modalClose";
-  close.textContent = "Close";
-  close.addEventListener("click", () => closeModal());
-
-  header.appendChild(left);
-  header.appendChild(close);
-  modal.appendChild(header);
-
-  if(!ds.profile){
-    ds.profile = await analyzeDatasetPlaceholder(ds.file);
-  }
-  const prof = document.createElement("div");
-  prof.className = "howStep";
-  prof.innerHTML = `
-    <div style="font-weight:850;margin-bottom:6px;">Dataset profile (placeholder)</div>
-    <div class="muted small">
-      Type: <b>${escapeHtml(ds.profile.inferredType)}</b><br/>
-      Rows: <b>${ds.profile.rows}</b>, Columns: <b>${ds.profile.cols}</b><br/>
-      Variables: ${escapeHtml(ds.profile.variables.slice(0,12).join(", "))}${ds.profile.variables.length>12 ? "…" : ""}
-    </div>
-  `;
-  modal.appendChild(prof);
-
-  modal.appendChild(hr());
-
-  const lab = document.createElement("div");
-  lab.className = "label";
-  lab.textContent = "What analysis do you want? (command-style prompt)";
-  const prompt = document.createElement("textarea");
-  prompt.className = "textarea";
-  prompt.rows = 3;
-  prompt.placeholder = "e.g., Regress y on x1 x2 with robust SE; plot y and x1; or run VAR with inflation, GDP, policy rate.";
-  modal.appendChild(lab);
-  modal.appendChild(prompt);
-
-  const runRow = document.createElement("div");
-  runRow.style.display = "flex";
-  runRow.style.justifyContent = "flex-end";
-  runRow.style.gap = "10px";
-  runRow.style.marginTop = "10px";
-
-  const runBtn = document.createElement("button");
-  runBtn.className = "btn primary";
-  runBtn.textContent = "Run (placeholder)";
-  runBtn.addEventListener("click", () => {
-    const p = (prompt.value || "").trim();
-    if(!p) return;
-
-    const req = runDatasetRequestPlaceholder(ds, p);
-    closeModal();
-    openDatasetResultsModal(ds, req.id);
-  });
-
-  runRow.appendChild(runBtn);
-  modal.appendChild(runRow);
-
-  modalRoot.appendChild(modal);
-}
-
-async function openDatasetResultsModal(ds, reqId){
-  modalRoot.classList.remove("hidden");
-  modalRoot.innerHTML = "";
-
-  const modal = document.createElement("div");
-  modal.className = "modal";
-
-  const header = document.createElement("div");
-  header.className = "modalHeader";
-
-  const left = document.createElement("div");
-  left.innerHTML = `
-    <div class="modalTitle">Results: ${escapeHtml(ds.filename)}</div>
-    <div class="muted small">Select which tables/plots to include. More than 5 total is too much for a policy brief.</div>
-  `;
-
-  const close = document.createElement("button");
-  close.className = "modalClose";
-  close.textContent = "Close";
-  close.addEventListener("click", () => closeModal());
-
-  header.appendChild(left);
-  header.appendChild(close);
-  modal.appendChild(header);
-
-  const req = ds.requests.find(r => r.id === reqId);
-  if(!req){
-    modal.appendChild(mutedText("No results found."));
-    modalRoot.appendChild(modal);
-    return;
-  }
-
-  const promptBox = document.createElement("div");
-  promptBox.className = "howStep";
-  promptBox.innerHTML = `
-    <div style="font-weight:850;margin-bottom:6px;">Your request</div>
-    <div class="muted">${escapeHtml(req.prompt)}</div>
-  `;
-  modal.appendChild(promptBox);
-
-  modal.appendChild(hr());
-
-  const items = [...req.tables, ...req.charts];
-  const selectedCount = items.filter(it => req.includeIds.has(it.id)).length;
-
-  const warn = document.createElement("div");
-  warn.className = "muted small";
-  warn.style.marginBottom = "10px";
-  warn.textContent = selectedCount > 5
-    ? "Warning: More than 5 tables/graphs (total) is too much for a policy brief."
-    : "Tip: Keep the brief to ≤ 5 tables/graphs for readability.";
-  modal.appendChild(warn);
-
-  const bulletsWrap = document.createElement("div");
-  bulletsWrap.className = "bullets";
-
-  items.forEach(it => {
-    const item = document.createElement("div");
-    item.className = "bulletItem";
-
-    const top = document.createElement("div");
-    top.className = "bulletTop";
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.className = "checkbox";
-    cb.checked = req.includeIds.has(it.id);
-    cb.addEventListener("change", () => {
-      if(cb.checked) req.includeIds.add(it.id);
-      else req.includeIds.delete(it.id);
-    });
-
-    const txt = document.createElement("div");
-    txt.className = "bulletText";
-    txt.textContent = it.label;
-
-    top.appendChild(cb);
-    top.appendChild(txt);
-    item.appendChild(top);
-
-    const preview = document.createElement("div");
-    preview.className = "muted small";
-    preview.style.marginTop = "8px";
-    preview.textContent = it.preview;
-    item.appendChild(preview);
-
-    bulletsWrap.appendChild(item);
-  });
-
-  modal.appendChild(bulletsWrap);
-
-  const doneRow = document.createElement("div");
-  doneRow.style.display = "flex";
-  doneRow.style.justifyContent = "flex-end";
-  doneRow.style.gap = "10px";
-  doneRow.style.marginTop = "12px";
-
-  const doneBtn = document.createElement("button");
-  doneBtn.className = "btn primary";
-  doneBtn.textContent = "Done";
-  doneBtn.addEventListener("click", () => closeModal());
-
-  doneRow.appendChild(doneBtn);
-  modal.appendChild(doneRow);
-
-  modalRoot.appendChild(modal);
-}
-
-async function analyzeDatasetPlaceholder(file){
-  const name = file.name.toLowerCase();
-  const inferredType = name.includes("panel") ? "panel" : (name.includes("time") ? "time series" : "cross section");
-  return {
-    rows: 1200,
-    cols: 14,
-    inferredType,
-    variables: [
-      "y", "x1", "x2", "x3",
-      "date", "id",
-      "inflation", "gdp", "rate",
-      "employment", "wage", "sector",
-      "region", "age"
-    ]
-  };
-}
-
-function runDatasetRequestPlaceholder(ds, prompt){
-  const req = {
-    id: uid("req"),
-    prompt,
-    tables: [
-      { id: uid("t"), label: "Table: Summary statistics (placeholder)", preview: "Means, standard deviations, min/max for selected variables." },
-      { id: uid("t"), label: "Table: Regression output (placeholder)", preview: "Coefficients with standard errors and significance stars." }
-    ],
-    charts: [
-      { id: uid("c"), label: "Plot: Time series of y (placeholder)", preview: "Line chart of y over time (to be generated by backend later)." }
-    ],
-    includeIds: new Set()
-  };
-  ds.requests.push(req);
-  return req;
-}
-
-/* ---------- Step 3: arguments + optional viewpoints (no repeated sentence) ---------- */
+/* ---------- Step 3 ---------- */
 function renderStep3(root){
   root.appendChild(label("Your argument"));
 
@@ -1052,7 +525,7 @@ function validateStep3(){
   return { ok:true };
 }
 
-/* ---------- Step 4: Generate + versions + iterate ---------- */
+/* ---------- Step 4 (generate + versions) ---------- */
 async function renderWizardWithGeneration(){
   renderWizard();
   await generateAndStoreNewReportVersion();
@@ -1119,9 +592,7 @@ function renderStep4(root){
   const downloadLatestBtn = document.createElement("button");
   downloadLatestBtn.className = "btn danger";
   downloadLatestBtn.textContent = "Download Latest Policy Brief";
-  downloadLatestBtn.addEventListener("click", () => {
-    downloadBlob(report.fileBlob, report.filename);
-  });
+  downloadLatestBtn.addEventListener("click", () => downloadBlob(report.fileBlob, report.filename));
   dlRow.appendChild(downloadLatestBtn);
 
   root.appendChild(dlRow);
@@ -1145,7 +616,7 @@ function renderStep4(root){
 
   root.appendChild(jumpRow);
 
-  nextBtn.textContent = "Next";
+  if(nextBtn) nextBtn.textContent = "Next";
 }
 
 async function generateAndStoreNewReportVersion(){
@@ -1159,9 +630,7 @@ async function generateAndStoreNewReportVersion(){
 
 async function generateReportPlaceholder(filename){
   const title = (state.reportTitle || state.topic || "Policy Brief").trim();
-
   const oneSentence = `Recommendation: Based on the uploaded sources and your analysis, prioritize a targeted policy design and disclose key uncertainties. (Placeholder)`;
-
   const bullets = [
     "Define the policy objective and constraints clearly.",
     "Summarize the strongest evidence from the selected documents.",
@@ -1186,12 +655,6 @@ ${oneSentence}
 ## Bullet point summary
 ${bullets.map(x => `- ${x}`).join("\n")}
 
-## Inputs captured
-- Documents uploaded: ${state.documents.length}
-- Datasets uploaded: ${state.datasets.length}
-- Manual selections (PDF bullets): ${countManualSelections()}
-- Your stance: ${truncate(state.stanceText, 180)}${state.stanceText.length>180 ? "…" : ""}
-
 (Placeholder report file. Backend will generate a real PDF with citations and reliability scoring.)`;
 
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
@@ -1208,12 +671,6 @@ ${bullets.map(x => `- ${x}`).join("\n")}
   };
 }
 
-function countManualSelections(){
-  return state.documents
-    .filter(d => d.mode === "manual")
-    .reduce((acc,d) => acc + d.selectedIds.size, 0);
-}
-
 function getActiveReport(){
   if(state.activeReportId){
     return state.reports.find(r => r.id === state.activeReportId) || state.reports[0];
@@ -1222,6 +679,7 @@ function getActiveReport(){
 }
 
 function renderVersionsPanel(){
+  if(!versionsList) return;
   versionsList.innerHTML = "";
   if(state.reports.length === 0){
     versionsList.appendChild(mutedText("No versions yet."));
@@ -1231,7 +689,9 @@ function renderVersionsPanel(){
   state.reports.forEach(rep => {
     const item = document.createElement("div");
     item.className = "versionItem";
-    if(rep.id === state.activeReportId) item.style.outline = "2px solid color-mix(in srgb, var(--primary) 55%, transparent)";
+    if(rep.id === state.activeReportId){
+      item.style.outline = "2px solid color-mix(in srgb, var(--primary) 55%, transparent)";
+    }
 
     const top = document.createElement("div");
     top.className = "versionTop";
@@ -1250,7 +710,6 @@ function renderVersionsPanel(){
 
     const btns = document.createElement("div");
     btns.className = "versionBtns";
-
     btns.appendChild(mkBtn("Download", () => downloadBlob(rep.fileBlob, rep.filename)));
     btns.appendChild(mkBtn("Delete", () => {
       state.reports = state.reports.filter(r => r.id !== rep.id);
@@ -1262,7 +721,6 @@ function renderVersionsPanel(){
 
     top.appendChild(left);
     top.appendChild(btns);
-
     item.appendChild(top);
 
     const rename = document.createElement("input");
@@ -1284,7 +742,7 @@ function renderVersionsPanel(){
   });
 }
 
-/* ---------- Step 5: Presentation generation ---------- */
+/* ---------- Step 5 ---------- */
 function renderStep5(root){
   if(state.reports.length === 0){
     root.appendChild(mutedText("No report versions yet. Generate a report in Step 4 first."));
@@ -1331,7 +789,7 @@ function renderStep5(root){
   });
   root.appendChild(voiceRow);
 
-  // Inline voice preview (no popup)
+  // Inline voice preview (placeholder)
   const previewWrap = document.createElement("div");
   previewWrap.style.marginTop = "10px";
 
@@ -1347,16 +805,11 @@ function renderStep5(root){
 
   const desc = document.createElement("div");
   desc.className = "muted small";
+  desc.textContent = (state.video.voice === "Ava") ? "Listen to Ava’s voice."
+                  : (state.video.voice === "Jeff") ? "Listen to Jeff’s voice."
+                  : "No voice selected.";
 
-  function previewText(){
-    const v = state.video.voice;
-    if(v === "Ava") return "Listen to Ava’s voice.";
-    if(v === "Jeff") return "Listen to Jeff’s voice.";
-    return "No voice selected.";
-  }
-  desc.textContent = previewText();
   speakerBtn.disabled = (state.video.voice === "No voice");
-
   speakerBtn.addEventListener("click", async () => {
     speakerBtn.disabled = true;
     const old = speakerBtn.textContent;
@@ -1369,7 +822,6 @@ function renderStep5(root){
   speakerRow.appendChild(speakerBtn);
   speakerRow.appendChild(desc);
   previewWrap.appendChild(speakerRow);
-
   root.appendChild(previewWrap);
 
   root.appendChild(hr());
@@ -1391,10 +843,7 @@ function renderStep5(root){
   genBtn.addEventListener("click", async () => {
     state.video.status = "working";
     renderWizard();
-
     await sleep(1100);
-    await generateVideoPlaceholder();
-
     state.video.status = "ready";
     renderWizard();
   });
@@ -1417,7 +866,7 @@ function renderStep5(root){
     dl.textContent = "Download presentation script";
     dl.addEventListener("click", () => {
       const rep = getActiveReport();
-      const script = presentationScriptPlaceholder(rep);
+      const script = `Presentation Script (placeholder)\n\nTitle: ${rep.title}\nVoice: ${state.video.voice}\n\n(Backend will generate a real video.)`;
       const blob = new Blob([script], { type: "text/plain;charset=utf-8" });
       downloadBlob(blob, `presentation_${rep.filename.replace(/\.[^.]+$/, "")}.txt`);
     });
@@ -1425,76 +874,406 @@ function renderStep5(root){
   }
 }
 
-async function generateVideoPlaceholder(){
-  state.video.ready = true;
-  state.video.reportId = state.activeReportId;
-  state.video.blob = null;
+/* ---------- PDF Review Modal (CLEAN + numbered bullets + immediate status update) ---------- */
+const modalRoot = $("modalRoot");
+
+async function openPdfReviewModal(doc){
+  if(!modalRoot) return;
+  modalRoot.classList.remove("hidden");
+  modalRoot.innerHTML = "";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  const header = document.createElement("div");
+  header.className = "modalHeader";
+
+  const left = document.createElement("div");
+  left.innerHTML = `
+    <div class="modalTitle">Review: ${escapeHtml(doc.filename)}</div>
+    <div class="muted small">Would you like to choose the arguments that will be used from this article?</div>
+  `;
+
+  const close = document.createElement("button");
+  close.className = "modalClose";
+  close.textContent = "Close";
+  close.addEventListener("click", () => closeModal());
+
+  header.appendChild(left);
+  header.appendChild(close);
+  modal.appendChild(header);
+
+  const btnRow = document.createElement("div");
+  btnRow.style.display = "flex";
+  btnRow.style.gap = "10px";
+  btnRow.style.flexWrap = "wrap";
+
+  const yesBtn = document.createElement("button");
+  yesBtn.className = "btn primary";
+  yesBtn.textContent = "Yes";
+  yesBtn.addEventListener("click", async () => {
+    if(!doc.summaryBullets){
+      const { pageCount, bullets } = await summarizePdfPlaceholder(doc.file);
+      doc.pageCount = pageCount;
+      doc.summaryBullets = bullets;
+      if(!(doc.selectedIds instanceof Set)) doc.selectedIds = new Set();
+    }
+    doc.mode = "manual";
+    renderModalBullets(modal, doc);
+  });
+
+  const noBtn = document.createElement("button");
+  noBtn.className = "btn";
+  noBtn.textContent = "No, choose as you see fit";
+  noBtn.addEventListener("click", () => {
+    doc.mode = "auto";
+    doc.selectedIds = new Set();
+    closeModal();
+    renderWizard(); // ✅ immediate status update
+  });
+
+  btnRow.appendChild(yesBtn);
+  btnRow.appendChild(noBtn);
+  modal.appendChild(btnRow);
+
+  // If already manual, show bullets right away
+  if(doc.mode === "manual" && doc.summaryBullets){
+    renderModalBullets(modal, doc);
+  }
+
+  modalRoot.appendChild(modal);
 }
 
-function presentationScriptPlaceholder(rep){
-  const voice = state.video.voice;
-  return `Presentation Script (3 minutes) — ${rep.title}
-Voice: ${voice}
+function renderModalBullets(modal, doc){
+  const existing = modal.querySelector(".bulletsBlock");
+  if(existing) existing.remove();
 
-[0:00–0:20] Question and why it matters
-- ${state.question}
+  const block = document.createElement("div");
+  block.className = "bulletsBlock";
 
-[0:20–1:20] Evidence and key facts (from sources)
-- Summarize the strongest, most relevant points from selected documents and any dataset results.
+  block.appendChild(hr());
 
-[1:20–2:20] Mechanisms / economic logic
-- Explain the main channels and assumptions behind the recommendation.
+  // Toolbar row (Include all)
+  const topRow = document.createElement("div");
+  topRow.className = "reviewToolbar";
+  topRow.style.display = "flex";
+  topRow.style.alignItems = "center";
+  topRow.style.justifyContent = "space-between";
+  topRow.style.gap = "12px";
+  topRow.style.flexWrap = "wrap";
 
-[2:20–3:00] Recommendation + caveats
-- ${rep.oneSentence}
-- State top uncertainties and what would change the conclusion.
+  const info = document.createElement("div");
+  info.innerHTML = `
+    <div style="font-weight:850;">Concise summary (placeholder)</div>
+    <div class="muted small">Tick items to include in the policy brief. Include all is available.</div>
+  `;
 
-(Placeholder. Backend will generate slides + voiceover + downloadable video.)`;
+  const includeAll = document.createElement("label");
+  includeAll.style.display = "flex";
+  includeAll.style.alignItems = "center";
+  includeAll.style.gap = "8px";
+  includeAll.style.cursor = "pointer";
+
+  const inc = document.createElement("input");
+  inc.type = "checkbox";
+  inc.className = "checkbox";
+
+  const allIds = allBulletIds(doc);
+  inc.checked = allIds.length > 0 && allIds.every(id => doc.selectedIds.has(id));
+  inc.addEventListener("change", () => {
+    if(inc.checked){
+      allIds.forEach(id => doc.selectedIds.add(id));
+    } else {
+      doc.selectedIds.clear();
+    }
+    renderModalBullets(modal, doc); // rerender to reflect checks
+  });
+
+  const incText = document.createElement("div");
+  incText.className = "small";
+  incText.textContent = "Include all";
+
+  includeAll.appendChild(inc);
+  includeAll.appendChild(incText);
+
+  topRow.appendChild(info);
+  topRow.appendChild(includeAll);
+
+  block.appendChild(topRow);
+
+  // Bullets list (numbered)
+  const bulletsWrap = document.createElement("div");
+  bulletsWrap.className = "bullets";
+
+  (doc.summaryBullets || []).forEach((b, idx) => {
+    const item = document.createElement("div");
+    item.className = "bulletItem";
+
+    const top = document.createElement("div");
+    top.className = "bulletTop";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "checkbox";
+    cb.checked = doc.selectedIds.has(b.id);
+    cb.addEventListener("change", () => {
+      if(cb.checked) doc.selectedIds.add(b.id);
+      else doc.selectedIds.delete(b.id);
+    });
+
+    const num = document.createElement("div");
+    num.className = "bulletNum";
+    num.textContent = String(idx + 1);
+
+    const txt = document.createElement("div");
+    txt.className = "bulletText";
+    txt.textContent = b.text;
+
+    top.appendChild(cb);
+    top.appendChild(num);
+    top.appendChild(txt);
+
+    item.appendChild(top);
+
+    if(b.children && b.children.length){
+      const subs = document.createElement("div");
+      subs.className = "subBullets";
+
+      b.children.forEach(s => {
+        const row = document.createElement("div");
+        row.className = "subRow";
+
+        const scb = document.createElement("input");
+        scb.type = "checkbox";
+        scb.className = "checkbox";
+        scb.checked = doc.selectedIds.has(s.id);
+        scb.addEventListener("change", () => {
+          if(scb.checked) doc.selectedIds.add(s.id);
+          else doc.selectedIds.delete(s.id);
+        });
+
+        const st = document.createElement("div");
+        st.className = "subText";
+        st.textContent = s.text;
+
+        row.appendChild(scb);
+        row.appendChild(st);
+        subs.appendChild(row);
+      });
+
+      item.appendChild(subs);
+    }
+
+    bulletsWrap.appendChild(item);
+  });
+
+  block.appendChild(bulletsWrap);
+
+  // Done row
+  const doneRow = document.createElement("div");
+  doneRow.style.display = "flex";
+  doneRow.style.justifyContent = "flex-end";
+  doneRow.style.gap = "10px";
+  doneRow.style.marginTop = "12px";
+
+  const doneBtn = document.createElement("button");
+  doneBtn.className = "btn primary";
+  doneBtn.textContent = "Done";
+  doneBtn.addEventListener("click", () => {
+    doc.mode = "manual";
+    closeModal();
+    renderWizard(); // ✅ immediate status update
+  });
+
+  doneRow.appendChild(doneBtn);
+  block.appendChild(doneRow);
+
+  modal.appendChild(block);
 }
 
-/* ---------- How it works (expand/collapse) ---------- */
+function closeModal(){
+  if(!modalRoot) return;
+  modalRoot.classList.add("hidden");
+  modalRoot.innerHTML = "";
+}
+
+function allBulletIds(doc){
+  const ids = [];
+  (doc.summaryBullets || []).forEach(b => {
+    ids.push(b.id);
+    (b.children || []).forEach(s => ids.push(s.id));
+  });
+  return ids;
+}
+
+/* Placeholder PDF summarizer */
+async function summarizePdfPlaceholder(file){
+  const kb = Math.max(1, Math.round(file.size / 1024));
+  const pageCount = Math.max(1, Math.round(kb / 90));
+  const target = bulletTargetFromPages(pageCount);
+
+  const bullets = [];
+  let count = 0;
+
+  for(let i=1; i<=target; i++){
+    count++;
+    const id = uid("b");
+    const childCount = (i % 4 === 0) ? 2 : (i % 7 === 0 ? 1 : 0);
+
+    const children = [];
+    for(let j=1; j<=childCount; j++){
+      count++;
+      if(count > 35) break;
+      children.push({ id: uid("s"), text: `Supporting point ${i}.${j} (placeholder)` });
+    }
+
+    bullets.push({
+      id,
+      text: `Key idea ${i} from the document (placeholder)`,
+      children
+    });
+
+    if(count >= 35) break;
+  }
+
+  // enforce 35 cap
+  while(bullets.length && bullets.reduce((acc,b)=> acc + 1 + (b.children?.length||0), 0) > 35){
+    const last = bullets[bullets.length-1];
+    if(last.children && last.children.length) last.children.pop();
+    else bullets.pop();
+  }
+
+  return { pageCount, bullets };
+}
+
+function bulletTargetFromPages(p){
+  if(p <= 1) return 6;
+  if(p <= 3) return 10;
+  if(p <= 5) return 12;
+  return Math.min(30, 12 + Math.round((p-5) * 2));
+}
+
+/* ---------- Dataset modals (placeholder) ---------- */
+async function openDatasetModal(ds){
+  if(!modalRoot) return;
+  modalRoot.classList.remove("hidden");
+  modalRoot.innerHTML = "";
+
+  const modal = document.createElement("div");
+  modal.className = "modal";
+
+  const header = document.createElement("div");
+  header.className = "modalHeader";
+
+  const left = document.createElement("div");
+  left.innerHTML = `
+    <div class="modalTitle">Dataset: ${escapeHtml(ds.filename)}</div>
+    <div class="muted small">Ask for econometric analysis or plots. (Placeholder today; backend later.)</div>
+  `;
+
+  const close = document.createElement("button");
+  close.className = "modalClose";
+  close.textContent = "Close";
+  close.addEventListener("click", () => closeModal());
+
+  header.appendChild(left);
+  header.appendChild(close);
+  modal.appendChild(header);
+
+  if(!ds.profile){
+    ds.profile = await analyzeDatasetPlaceholder(ds.file);
+  }
+
+  const prof = document.createElement("div");
+  prof.className = "howStep";
+  prof.innerHTML = `
+    <div style="font-weight:850;margin-bottom:6px;">Dataset profile (placeholder)</div>
+    <div class="muted small">
+      Type: <b>${escapeHtml(ds.profile.inferredType)}</b><br/>
+      Rows: <b>${ds.profile.rows}</b>, Columns: <b>${ds.profile.cols}</b><br/>
+      Variables: ${escapeHtml(ds.profile.variables.slice(0,12).join(", "))}${ds.profile.variables.length>12 ? "…" : ""}
+    </div>
+  `;
+  modal.appendChild(prof);
+
+  modal.appendChild(hr());
+
+  const lab = document.createElement("div");
+  lab.className = "label";
+  lab.textContent = "What analysis do you want? (command-style prompt)";
+  const prompt = document.createElement("textarea");
+  prompt.className = "textarea";
+  prompt.rows = 3;
+  prompt.placeholder = "e.g., Regress y on x1 x2 with robust SE; plot y and x1; or run VAR with inflation, GDP, policy rate.";
+  modal.appendChild(lab);
+  modal.appendChild(prompt);
+
+  const runRow = document.createElement("div");
+  runRow.style.display = "flex";
+  runRow.style.justifyContent = "flex-end";
+  runRow.style.gap = "10px";
+  runRow.style.marginTop = "10px";
+
+  const runBtn = document.createElement("button");
+  runBtn.className = "btn primary";
+  runBtn.textContent = "Run (placeholder)";
+  runBtn.addEventListener("click", () => {
+    const p = (prompt.value || "").trim();
+    if(!p) return;
+    ds.requests.push({ id: uid("req"), prompt: p });
+    closeModal();
+    renderWizard();
+  });
+
+  runRow.appendChild(runBtn);
+  modal.appendChild(runRow);
+
+  modalRoot.appendChild(modal);
+}
+
+async function analyzeDatasetPlaceholder(file){
+  const name = file.name.toLowerCase();
+  const inferredType = name.includes("panel") ? "panel" : (name.includes("time") ? "time series" : "cross section");
+  return {
+    rows: 1200,
+    cols: 14,
+    inferredType,
+    variables: [
+      "y", "x1", "x2", "x3",
+      "date", "id",
+      "inflation", "gdp", "rate",
+      "employment", "wage", "sector",
+      "region", "age"
+    ]
+  };
+}
+
+/* ---------- How it works ---------- */
 const toggleAllHowBtn = $("toggleAllHow");
 const howStepsRoot = $("howSteps");
 let howExpandedAll = false;
 
 function renderHow(){
+  if(!howStepsRoot) return;
+
   const howData = [
-    {
-      title: "Step 1. Define the Question",
-      hint: "Topic + one-sentence policy question",
-      desc:
-        "Define the decision you want to inform. Keep the policy question one sentence and decision-relevant. This step anchors the rest of the workflow."
-    },
-    {
-      title: "Step 2. Upload sources (PDF's, Notes, Datasets)",
-      hint: "Add evidence you want to rely on",
-      desc:
-        "Upload documents and datasets. For PDFs, you can review a concise bullet summary and tick which arguments to include. For datasets, you can request analyses (regressions, VAR/ARIMA, plots) and choose which outputs belong in the brief."
-    },
-    {
-      title: "Step 3. Add your own arguments and perspectives",
-      hint: "Your stance + optional viewpoints",
-      desc:
-        "Write your stance as sentences or bullet points. Add optional polls and expert opinions, and include sources. This is where your expert interpretation is captured."
-    },
-    {
-      title: "Step 4. Download your brief",
-      hint: "Generate, iterate, and manage versions",
-      desc:
-        "The tool generates a report version. You get a one-sentence takeaway and a short bullet summary, and you can download the report. You can go back to earlier steps to revise inputs and create new versions."
-    },
-    {
-      title: "Step 5. Download a 3 min presentation of the results",
-      hint: "Pick a version + voice",
-      desc:
-        "Choose which report version you want to present. Select a voice (or no voice) and generate a short 3-minute presentation. You can play and download it once generated (enabled when backend is connected)."
-    }
+    { title: "Step 1. Define the Question", hint:"Topic + one-sentence policy question",
+      desc:"Define the decision you want to inform. Keep the policy question one sentence and decision-relevant. This step anchors the rest of the workflow." },
+    { title: "Step 2. Upload sources (PDF's, Notes, Datasets)", hint:"Add evidence you want to rely on",
+      desc:"Upload documents and datasets. For PDFs, you can review a concise bullet summary and tick which arguments to include. For datasets, you can request analyses and choose which outputs belong in the brief." },
+    { title: "Step 3. Add your own arguments and perspectives", hint:"Your stance + optional viewpoints",
+      desc:"Write your stance as sentences or bullet points. Add optional polls and expert opinions, and include sources." },
+    { title: "Step 4. Download your brief", hint:"Generate, iterate, and manage versions",
+      desc:"Generate a report version. You get a one-sentence takeaway and bullet summary, can download and iterate." },
+    { title: "Step 5. Download a 3 min presentation of the results", hint:"Pick a version + voice",
+      desc:"Choose which report version to present, select a voice (or no voice) and generate a short presentation (enabled when backend is connected)." }
   ];
 
   howStepsRoot.innerHTML = "";
   howData.forEach((s) => {
     const item = document.createElement("div");
     item.className = "howStep";
+
     const top = document.createElement("div");
     top.className = "howStepTop";
 
@@ -1512,6 +1291,7 @@ function renderHow(){
 
     top.appendChild(left);
     top.appendChild(right);
+
     item.appendChild(top);
     item.appendChild(desc);
 
@@ -1522,20 +1302,20 @@ function renderHow(){
     howStepsRoot.appendChild(item);
   });
 
-  toggleAllHowBtn.textContent = howExpandedAll ? "Collapse all" : "Expand all";
+  if(toggleAllHowBtn) toggleAllHowBtn.textContent = howExpandedAll ? "Collapse all" : "Expand all";
 }
 
-toggleAllHowBtn.addEventListener("click", () => {
+toggleAllHowBtn?.addEventListener("click", () => {
   howExpandedAll = !howExpandedAll;
-  const items = howStepsRoot.querySelectorAll(".howStep");
+  const items = howStepsRoot?.querySelectorAll(".howStep") || [];
   items.forEach(it => {
     if(howExpandedAll) it.classList.add("open");
     else it.classList.remove("open");
   });
-  toggleAllHowBtn.textContent = howExpandedAll ? "Collapse all" : "Expand all";
+  if(toggleAllHowBtn) toggleAllHowBtn.textContent = howExpandedAll ? "Collapse all" : "Expand all";
 });
 
-/* ---------- Small utilities ---------- */
+/* ---------- Utilities ---------- */
 function label(text){
   const l = document.createElement("div");
   l.className = "label";
@@ -1587,10 +1367,6 @@ function dateTagNow(){
   const yy = String(d.getFullYear()).slice(-2);
   return `${mm}${dd}${yy}`;
 }
-function truncate(s, n){
-  const t = (s || "").trim();
-  return t.length <= n ? t : t.slice(0,n);
-}
 function downloadBlob(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1599,7 +1375,7 @@ function downloadBlob(blob, filename){
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 2500);
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 function renderWorking(title, text){
   const w = document.createElement("div");
