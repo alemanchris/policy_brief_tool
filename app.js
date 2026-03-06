@@ -445,9 +445,9 @@ function renderDocumentPill(doc){
   const meta = document.createElement("div");
   meta.className = "pillMeta";
   const modeLabel =
-    doc.mode === "manual" ? `Manual selection (${doc.selectedIds.size} items)` :
-    doc.mode === "auto" ? "Auto (tool decides)" :
-    "Not reviewed yet";
+    doc.mode === "manual" ? `Selection: manual (${doc.selectedIds.size} items)` :
+    doc.mode === "auto" ? "Selection: auto (tool decides)" :
+    "Selection: not reviewed";
   meta.textContent = modeLabel;
 
   left.appendChild(title);
