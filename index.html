@@ -3,7 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Policy Brief Studio</title>
+
+  <!-- ═══ Primary SEO ═══ -->
+  <title>Policy Brief Studio — Christian Aleman | Economic Policy Tool</title>
+  <meta name="description" content="Policy Brief Studio by Christian Daniel Aleman Pericon. A free economic policy tool to build structured, evidence-based policy briefs from sources, datasets, and your own analysis. Five guided steps. Export-ready output." />
+  <meta name="keywords" content="Christian Aleman, Christian Aleman policy tool, economic policy tool, policy brief generator, policy brief studio, evidence-based policy, Christian Daniel Aleman Pericon" />
+  <meta name="author" content="Christian Daniel Aleman Pericon" />
+  <link rel="canonical" href="https://alemanchris.github.io/policy_brief_tool/" />
+
+  <!-- ═══ Open Graph (LinkedIn, WhatsApp, etc.) ═══ -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://alemanchris.github.io/policy_brief_tool/" />
+  <meta property="og:title" content="Policy Brief Studio — Christian Aleman | Economic Policy Tool" />
+  <meta property="og:description" content="Build structured, evidence-based policy briefs in five steps. Upload sources, add your analysis, generate and iterate versions. By Christian Daniel Aleman Pericon." />
+  <meta property="og:site_name" content="Policy Brief Studio" />
+
+  <!-- ═══ Twitter / X card ═══ -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Policy Brief Studio — Christian Aleman" />
+  <meta name="twitter:description" content="A free economic policy tool to build structured policy briefs. By Christian Daniel Aleman Pericon." />
+
+  <!-- ═══ Structured Data — tells Google this is a SoftwareApplication by you ═══ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Policy Brief Studio",
+    "alternateName": ["Christian Aleman Policy Tool", "Economic Policy Tool"],
+    "description": "A free web-based economic policy tool to build structured, evidence-based policy briefs from documents, datasets, and expert analysis. Five guided steps from question definition to exportable brief and presentation.",
+    "url": "https://alemanchris.github.io/policy_brief_tool/",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Christian Daniel Aleman Pericon",
+      "url": "https://alemanchris.github.io"
+    },
+    "copyrightHolder": {
+      "@type": "Person",
+      "name": "Christian Daniel Aleman Pericon"
+    },
+    "copyrightYear": "2025",
+    "license": "https://creativecommons.org/licenses/by-nc/4.0/"
+  }
+  </script>
+
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -42,32 +91,29 @@
         </aside>
 
         <section class="content">
-          <!-- ✅ fixed content width wrapper -->
-          <div class="contentInner">
-            <div class="hero">
-              <h1>Build a tailored policy brief</h1>
-              <p>
-                Start with a question. Add sources and your perspective. Generate a brief and multiple versions of it.
-                Export your preferred brief and generate a 3-minute presentation.
-              </p>
+          <div class="hero">
+            <h1>Build a tailored policy brief</h1>
+            <p>
+              Start with a question. Add sources and your perspective. Generate a brief and multiple versions of it.
+              Export your preferred brief and generate a 3-minute presentation.
+            </p>
 
-              <div class="card">
-                <h2>Start your policy brief</h2>
+            <div class="card">
+              <h2>Start your policy brief</h2>
 
-                <label class="label">Topic</label>
-                <input id="topicInput" class="input"
-                  placeholder="e.g., Should the UAE expand unemployment insurance?" />
+              <label class="label">Topic</label>
+              <input id="topicInput" class="input"
+                placeholder="e.g., Should the UAE expand unemployment insurance?" />
 
-                <label class="label">Policy question (one sentence)</label>
-                <textarea id="questionInput" class="textarea" rows="2"
-                  placeholder="e.g., What are the expected impacts on employment, fiscal costs, and inequality over 3 years?"></textarea>
+              <label class="label">Policy question (one sentence)</label>
+              <textarea id="questionInput" class="textarea" rows="2"
+                placeholder="e.g., What are the expected impacts on employment, fiscal costs, and inequality over 3 years?"></textarea>
 
-                <button id="startBtn" class="btn primary">Start</button>
-                <div id="startError" class="error hidden"></div>
-              </div>
-
-              <div class="hint">Tip: This is a wizard, we'll guide you through the steps.</div>
+              <button id="startBtn" class="btn primary">Start</button>
+              <div id="startError" class="error hidden"></div>
             </div>
+
+            <div class="hint">Tip: This is a wizard, we'll guide you through the steps.</div>
           </div>
         </section>
       </div>
@@ -102,38 +148,35 @@
         </aside>
 
         <section class="content">
-          <!-- ✅ fixed content width wrapper -->
-          <div class="contentInner">
-            <div class="wizardGrid" id="wizardGrid">
-              <div class="card mainCard">
-                <div class="stepHeader">
-                  <div>
-                    <div class="stepKicker" id="progressLabel"></div>
-                    <h2 id="stepTitle" class="m0">Step</h2>
-                    <p id="stepDesc" class="muted m0"></p>
-                  </div>
+          <div class="grid">
+            <div class="card mainCard">
+              <div class="stepHeader">
+                <div>
+                  <div class="stepKicker" id="progressLabel"></div>
+                  <h2 id="stepTitle" class="m0">Step</h2>
+                  <p id="stepDesc" class="muted m0"></p>
                 </div>
-
-                <div id="stepContent"></div>
-
-                <div class="actions">
-                  <button id="backBtn" class="btn">Back</button>
-                  <button id="nextBtn" class="btn primary">Next</button>
-                </div>
-
-                <div id="wizardError" class="error hidden"></div>
               </div>
 
-              <!-- ✅ always occupies space; we use visibility-hidden instead of display:none -->
-              <div class="card versionsCard vhidden" id="versionsCard">
-                <div class="versionsHeader">
-                  <div>
-                    <div class="versionsTitle">Report versions</div>
-                    <div class="muted small">Most recent at the top.</div>
-                  </div>
-                </div>
-                <div id="versionsList" class="versionsList"></div>
+              <div id="stepContent"></div>
+
+              <div class="actions">
+                <button id="backBtn" class="btn">Back</button>
+                <button id="nextBtn" class="btn primary">Next</button>
               </div>
+
+              <div id="wizardError" class="error hidden"></div>
+            </div>
+
+            <!-- Versions panel (shows step 4+) -->
+            <div class="card versionsCard hidden" id="versionsCard">
+              <div class="versionsHeader">
+                <div>
+                  <div class="versionsTitle">Report versions</div>
+                  <div class="muted small">Most recent at the top.</div>
+                </div>
+              </div>
+              <div id="versionsList" class="versionsList"></div>
             </div>
           </div>
         </section>
@@ -145,6 +188,15 @@
     <span>Hosted on GitHub Pages.</span>
     <span class="dot">•</span>
     <span>Frontend today. Backend API later.</span>
+    <span class="dot">•</span>
+    <span>© 2025</span>
+    <span class="dot">•</span>
+    <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer"
+       style="display:inline-flex;align-items:center;gap:5px;color:var(--muted);text-decoration:none;font-size:12.5px;"
+       title="Licensed under CC BY-NC 4.0 — Non-commercial use with attribution">
+      <img src="https://licensebuttons.net/l/by-nc/4.0/80x15.png" alt="CC BY-NC 4.0" style="height:15px;vertical-align:middle;" />
+      CC BY-NC 4.0
+    </a>
   </footer>
 
   <div id="modalRoot" class="modalRoot hidden"></div>
